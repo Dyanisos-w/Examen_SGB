@@ -1,0 +1,76 @@
+<section class="min-h-screen flex items-center justify-center bg-gray-900">
+
+  <div class="w-full max-w-md bg-gray-800 rounded-lg shadow-lg border border-gray-700">
+
+    <div class="p-6 space-y-6">
+
+      <!-- Logo -->
+      <div class="flex justify-center">
+        <span class="text-white text-xl font-semibold">
+          Flowbite
+        </span>
+      </div>
+
+      <!-- Title -->
+      <h1 class="text-xl font-bold text-white">
+        Sign in to your account
+      </h1>
+
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="onSubmit()"
+        class="space-y-4">
+
+        <!-- Email -->
+        <div>
+          <label class="block mb-2 text-sm font-medium text-gray-300">
+            Your Matricule
+          </label>
+          <input
+            type="email"
+            formControlName="matricule"
+            placeholder="L12345"
+            class="w-full rounded-lg bg-gray-700 border border-gray-600
+                   text-white placeholder-gray-400 text-sm p-2.5
+                   focus:ring-primary-600 focus:border-primary-600">
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block mb-2 text-sm font-medium text-gray-300">
+            Password
+          </label>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="w-full rounded-lg bg-gray-700 border border-gray-600
+                   text-white placeholder-gray-400 text-sm p-2.5
+                   focus:ring-primary-600 focus:border-primary-600">
+        </div>
+
+        <!-- Button -->
+        <button
+          type="submit"
+          [disabled]="loginForm.invalid"
+          class="w-full py-2.5 rounded-lg text-sm font-medium text-white
+                 bg-blue-600
+                 bg-primary-600 hover:bg-primary-700
+                 focus:ring-4 focus:ring-primary-800
+                 disabled:opacity-50">
+          Log in
+        </button>
+
+        <!-- Footer -->
+        <p class="text-sm text-gray-400 text-center">
+          Don’t have an account?
+          <a routerLink="/register"
+             class="text-primary-500 hover:underline">
+            Create one
+          </a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+</section>
