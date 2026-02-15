@@ -1,5 +1,6 @@
 package com.example.padelbackend;
 
+import com.example.padelbackend.service.PadelBackendApplication;
 import org.springframework.boot.SpringApplication;
 
 public class TestPadelBackendApplication {

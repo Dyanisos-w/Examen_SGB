@@ -1,6 +1,6 @@
 package com.example.padelbackend;
-
-import static org.junit.jupiter.api.Assertions.*;
+// test is a chit
+import com.example.padelbackend.service.ReservationService;
 
 class ReservationServiceTest {
     public static void main(String[] args) {
