@@ -1,4 +1,4 @@
-package com.example.padelbackend;
+package com.example.padelbackend.rule;
 
 import java.time.LocalDate;
 

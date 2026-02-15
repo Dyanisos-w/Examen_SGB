@@ -1,5 +1,4 @@
-import java.time.LocalDate;
-import java.util.Locale;
+package com.example.padelbackend.rule;
 
 public interface ReservationEligibilityRule {
     boolean canCreatMatch(User user);
