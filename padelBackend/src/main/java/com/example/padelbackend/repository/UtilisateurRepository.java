@@ -1,7 +1,6 @@
 package com.example.padelbackend.repository;
 
 import com.example.padelbackend.model.Utilisateur;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Repository
-public class UtilisateurRepository extends JpaRepository<Utilisateur, String> {
+public class UtilisateurRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public UtilisateurRepository(JdbcTemplate jdbcTemplate) {
