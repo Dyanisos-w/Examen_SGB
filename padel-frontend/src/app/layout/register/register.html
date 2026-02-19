@@ -7,9 +7,10 @@
       <!-- Logo -->
       <div class="flex justify-center">
         <span class="text-white text-xl font-semibold">
-          Flowbite
+          Paddel
         </span>
       </div>
+
 
       <!-- Title -->
       <h1 class="text-xl font-bold text-white">
@@ -20,8 +21,70 @@
         [formGroup]="registerForm"
         (ngSubmit)="onSubmit()"
         class="space-y-4">
+        <!-- Account Type -->
+        <div>
+          <label class="block mb-3 text-sm font-medium text-gray-300">
+            Account Type
+          </label>
 
-        <!-- Email -->
+          <div class="grid grid-cols-3 gap-3">
+            <button
+              type="button"
+              (click)="selectAccountType('GLOBAL')"
+              [ngClass]="{
+        'bg-sky-600 ring-2 ring-primary-400': registerForm.get('accountType')?.value === 'GLOBAL',
+        'bg-gray-700 hover:bg-gray-600': registerForm.get('accountType')?.value !== 'GLOBAL'
+      }"
+              class="py-2.5 rounded-lg text-sm font-medium text-white transition">
+              Global
+            </button>
+
+            <button
+              type="button"
+              (click)="selectAccountType('LOCAL')"
+              [ngClass]="{
+        'bg-sky-600 ring-2 ring-primary-400': registerForm.get('accountType')?.value === 'LOCAL',
+        'bg-gray-700 hover:bg-gray-600': registerForm.get('accountType')?.value !== 'LOCAL'
+      }"
+              class="py-2.5 rounded-lg text-sm font-medium text-white transition">
+              Local
+            </button>
+
+            <button
+              type="button"
+              (click)="selectAccountType('FREE')"
+              [ngClass]="{
+        'bg-sky-600 ring-2 ring-primary-400': registerForm.get('accountType')?.value === 'FREE',
+        'bg-gray-700 hover:bg-gray-600': registerForm.get('accountType')?.value !== 'FREE'
+      }"
+              class="py-2.5 rounded-lg text-sm font-medium text-white transition">
+              Libre
+            </button>
+          </div>
+          <div *ngIf="registerForm.get('accountType')?.value === 'LOCAL'" class="mt-4">
+
+            <label class="block mb-2 text-sm font-medium text-gray-300">
+              Select your city
+            </label>
+
+            <select
+              formControlName="ville"
+              class="w-full rounded-lg bg-gray-700 border border-gray-600
+           text-white text-sm p-2.5
+           focus:ring-primary-600 focus:border-primary-600">
+
+              <option value="">Choose a city</option>
+              <option value="Bruxelles">Bruxelles</option>
+              <option value="Namur">Namur</option>
+              <option value="Liège">Liège</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <!-- Matricule généré par le backend -->
         <div>
           <label class="block mb-2 text-sm font-medium text-gray-300">
             Your matricule
@@ -79,12 +142,18 @@
           </label>
         </div>
 
+
+
+
+
+
+
         <!-- Button -->
         <button
           type="submit"
           [disabled]="registerForm.invalid"
           class="w-full py-2.5 rounded-lg text-sm font-medium text-white
-                 bg-primary-600 hover:bg-primary-700
+                 bg-sky-600 hover:bg-primary-700
                  focus:ring-4 focus:ring-primary-800
                  disabled:opacity-50">
           Create an account
