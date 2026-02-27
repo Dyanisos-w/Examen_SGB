@@ -1,5 +1,6 @@
 package com.example.padelbackend;
 // test is a chit
+import com.example.padelbackend.model.Terrain;
 import com.example.padelbackend.service.ReservationService;
 
 class ReservationServiceTest {
