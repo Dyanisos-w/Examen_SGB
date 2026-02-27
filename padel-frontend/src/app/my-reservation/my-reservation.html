@@ -1,0 +1,68 @@
+<div class="p-6 max-w-4xl mx-auto" xmlns="">
+
+  <h2 class="text-2xl font-semibold mb-6">
+    Mes Réservations
+  </h2>
+
+  <mat-accordion *ngIf="!loading">
+
+    <mat-expansion-panel *ngFor="let reservation of reservations; trackBy: trackByReservationId">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ reservation.siteNom }} - {{ reservation.terrainNom }}
+        </mat-panel-title>
+
+        <mat-panel-description>
+          {{ reservation.dateHeure | date:'dd/MM/yyyy HH:mm' }}
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <!-- DETAILS -->
+      <div class="space-y-4">
+
+        <div>
+          <p><strong>Statut :</strong> {{ reservation.statutReservation }}</p>
+        </div>
+
+        <div>
+          <h4 class="font-semibold mb-2">Participants</h4>
+
+          <div class="space-y-2">
+            <div *ngFor="let p of reservation.participants; trackBy: trackByParticipantId"
+                 class="flex justify-between items-center p-3 bg-gray-50 rounded">
+
+              <span>
+                {{ p.nom }} {{ p.prenom }}
+                <span *ngIf="p.isMe" class="text-xs text-gray-500">(Vous)</span>
+              </span>
+
+              <mat-chip
+                [color]="p.paymentStatus === 'PAYE' ? 'primary' : 'warn'"
+                selected>
+                {{ p.paymentStatus === 'PAYE' ? 'Payé' : 'À payer' }}
+              </mat-chip>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- PAY BUTTON -->
+        <div *ngIf="hasToPay(reservation)" class="pt-4">
+          <button mat-raised-button color="primary"
+                  (click)="pay(reservation.reservationId)">
+            Payer ma part
+          </button>
+        </div>
+
+      </div>
+
+    </mat-expansion-panel>
+
+  </mat-accordion>
+
+  <div *ngIf="loading" class="text-center py-8">
+    Chargement...
+  </div>
+
+</div>
