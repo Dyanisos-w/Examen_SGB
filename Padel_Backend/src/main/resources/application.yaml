@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: Padel_Backend
+    datasource:
+      url: jdbc:sqlserver://localhost:1433;databaseName=PadelDB
+      username: sa
+      password: YourPassword
+
+      jpa:
+        hibernate:
+          ddl-auto: validate
+        show-sql: true
+
+    server:
+      port: 8080
