@@ -53,5 +53,6 @@ public class Site {
     public void setNombreTerrains(int nombreTerrains) { this.nombreTerrains = nombreTerrains; }
 
     public Terrain[] getTerrains() {
+        return null;
     }
 }

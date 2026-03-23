@@ -36,5 +36,6 @@ public class PlanningSlotDto {
     }
 
     public void setTerrainId(Integer terrainId) {
+
     }
 }
