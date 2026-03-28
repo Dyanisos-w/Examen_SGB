@@ -19,7 +19,14 @@ public class ReservationUtilisateur {
 
     @Column(name = "StatutResaUser")
     private String statutResaUser;
+    @Column(name = "montant_du")
+    private Double montantDu;
 
+    @Column(name = "montant_paye")
+    private Double montantPaye;
+
+    @Column(name = "statut_paiement")
+    private String statutPaiement;
     public ReservationUtilisateur() {}
 
     /** Constructeur pratique utilisé par ReservationEngine */
@@ -52,4 +59,27 @@ public class ReservationUtilisateur {
         this.statutResaUser = statutResaUser;
     }
 
+    public Double getMontantDu() {
+        return montantDu;
+    }
+
+    public void setMontantDu(Double montantDu) {
+        this.montantDu = montantDu;
+    }
+
+    public Double getMontantPaye() {
+        return montantPaye;
+    }
+
+    public void setMontantPaye(Double montantPaye) {
+        this.montantPaye = montantPaye;
+    }
+
+    public String getStatutPaiement() {
+        return statutPaiement;
+    }
+
+    public void setStatutPaiement(String statutPaiement) {
+        this.statutPaiement = statutPaiement;
+    }
 }

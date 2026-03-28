@@ -35,8 +35,17 @@ public class Reservation {
     private Boolean estMaintenu;
 
     @Column(name = "est_complet")
-    private Boolean estComplet;
 
+    private Boolean estComplet;
+    @Column(name = "type_reservation")
+    private String typeReservation; // PUBLIC ou PRIVATE
+
+    @ManyToOne
+    @JoinColumn(name = "CreateurMatricule")
+    private Utilisateur createur;
+
+    @Column(name = "montant_total")
+    private Double montantTotal;
     public Reservation() {}
 
     public Integer getIdReservation() {
@@ -110,5 +119,29 @@ public class Reservation {
     public void setEstComplet(Boolean estComplet) {
         this.estComplet = estComplet;
     }
-// getters setters
+
+    public String getTypeReservation() {
+        return typeReservation;
+    }
+
+    public void setTypeReservation(String typeReservation) {
+        this.typeReservation = typeReservation;
+    }
+
+    public Utilisateur getCreateur() {
+        return createur;
+    }
+
+    public void setCreateur(Utilisateur createur) {
+        this.createur = createur;
+    }
+
+    public Double getMontantTotal() {
+        return montantTotal;
+    }
+
+    public void setMontantTotal(Double montantTotal) {
+        this.montantTotal = montantTotal;
+    }
+    // getters setters
 }

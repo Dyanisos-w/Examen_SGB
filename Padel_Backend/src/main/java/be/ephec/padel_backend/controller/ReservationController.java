@@ -1,6 +1,6 @@
 package be.ephec.padel_backend.controller;
 
-import be.ephec.padel_backend.DTO.CreateReservationRequest;
+import be.ephec.padel_backend.DTO.CreateReservationRequestDto;
 import be.ephec.padel_backend.DTO.ReservationDto;
 import be.ephec.padel_backend.model.Reservation;
 import be.ephec.padel_backend.repository.ReservationRepository;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
@@ -25,16 +24,18 @@ public class ReservationController {
 
 
     @PostMapping
-    public ResponseEntity<?> createReservation(@RequestBody CreateReservationRequest req) {
+    public ResponseEntity<?> createReservation(@RequestBody CreateReservationRequestDto req) {
 
-        reservationService.createReservation(
+        Reservation reservation = reservationService.createReservation(
                 req.userId,
-                req.siteId,
                 req.terrainId,
+                req.siteId,
                 LocalDate.parse(req.date),
-                LocalTime.parse(req.heureDebut)
+                LocalTime.parse(req.heureDebut),
+                req.typeReservation
         );
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(reservation.getIdReservation());
     }
 }

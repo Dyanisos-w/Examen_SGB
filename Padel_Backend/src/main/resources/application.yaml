@@ -1,15 +1,16 @@
 spring:
-  application:
-    name: Padel_Backend
-    datasource:
-      url: jdbc:sqlserver://localhost:1433;databaseName=PadelDB
-      username: sa
-      password: YourPassword
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
+    username: sa
+    password: PadelDB!2026
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
-      jpa:
-        hibernate:
-          ddl-auto: validate
-        show-sql: true
 
-    server:
-      port: 8080
+
+server:
+  port: 8080
+
+jwt:
+  secret: PadelProjetJWTSecretKeyMinimum32CharactersLong!!!
+  expiration: 3600000
+  refresh-expiration: 86400000

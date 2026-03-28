@@ -1,6 +1,11 @@
 package be.ephec.padel_backend.model;
 import jakarta.persistence.*;
+
+import java.util.List;
+
+
 @Entity
+
 @Table(name = "Site")
 public class Site {
     @Id
@@ -16,6 +21,9 @@ public class Site {
 
     @Column(name = "nombre_terrains")
     private int nombreTerrains;
+
+    @OneToMany(mappedBy = "site")
+    private List<Terrain> terrains;
 
     public Site() {}
 
@@ -52,6 +60,15 @@ public class Site {
 
     public void setNombreTerrains(int nombreTerrains) { this.nombreTerrains = nombreTerrains; }
 
-    public Terrain[] getTerrains() {
+    public void setSiteId(Integer siteId) {
+        this.siteId = siteId;
+    }
+
+    public List<Terrain> getTerrains() {
+        return terrains;
+    }
+
+    public void setTerrains(List<Terrain> terrains) {
+        this.terrains = terrains;
     }
 }
