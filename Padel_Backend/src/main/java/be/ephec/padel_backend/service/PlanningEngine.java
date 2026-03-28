@@ -124,4 +124,9 @@ public class PlanningEngine {
 
         return 0;
     }
+    public boolean isSlotAvailable(Integer terrainId, LocalDate date, LocalTime heure) {
+        return !reservationRepository.existsByTerrainAndDateAndHeure(
+                terrainId, date, heure
+        );
+    }
 }

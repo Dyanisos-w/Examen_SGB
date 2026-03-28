@@ -6,4 +6,5 @@ public class CreateReservationRequestDto {
     public Integer terrainId;
     public String date;
     public String heureDebut;
+    public String typeReservation;
 }

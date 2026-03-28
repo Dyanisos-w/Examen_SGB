@@ -24,6 +24,6 @@ public class PlanningController {
             @RequestParam String userId,
             @RequestParam Integer siteId) {
 
-        return planningEngine.generatePlanning(userId, siteId);
+        return planningEngine.generateWeeklyPlanning(userId, siteId);
     }
 }
