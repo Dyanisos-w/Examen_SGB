@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationUtilisateurRepository
         extends JpaRepository<ReservationUtilisateur, ReservationUtilisateurId> {
@@ -33,4 +34,10 @@ public interface ReservationUtilisateurRepository
 
     @Query("SELECT ru FROM ReservationUtilisateur ru WHERE ru.reservation.idReservation = :reservationId")
     List<ReservationUtilisateur> findByIdReservationId(@Param("reservationId") Integer reservationId);
+    @Query("SELECT ru FROM ReservationUtilisateur ru " +
+            "WHERE ru.reservation.idReservation = :reservationId " +
+            "AND ru.utilisateur.matricule = :matricule")
+    Optional<ReservationUtilisateur> findByIdReservationIdAndUtilisateur(
+            @Param("reservationId") Integer reservationId,
+            @Param("matricule") String matricule);
 }

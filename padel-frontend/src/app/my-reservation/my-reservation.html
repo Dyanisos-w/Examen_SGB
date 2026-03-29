@@ -1,68 +1,133 @@
-<div class="p-6 max-w-4xl mx-auto" xmlns="">
+<div class="min-h-screen bg-gray-900 text-white p-6">
+  <div class="max-w-3xl mx-auto">
 
-  <h2 class="text-2xl font-semibold mb-6">
-    Mes Réservations
-  </h2>
+    <!-- Retour -->
+    <a routerLink="/home"
+       class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition mb-6">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Accueil
+    </a>
 
-  <mat-accordion *ngIf="!loading">
+    <!-- Header -->
+    <h1 class="text-3xl font-bold mb-2">Mes Réservations</h1>
+    <p class="text-gray-400 mb-8">Toutes les réservations auxquelles vous participez.</p>
 
-    <mat-expansion-panel *ngFor="let reservation of reservations; trackBy: trackByReservationId">
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex justify-center py-20">
+      <div class="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
 
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{ reservation.siteNom }} - {{ reservation.terrainNom }}
-        </mat-panel-title>
+    <!-- Empty -->
+    <div *ngIf="!loading && reservations.length === 0"
+         class="text-center py-20 text-gray-500">
+      Vous n'avez aucune réservation active.
+    </div>
 
-        <mat-panel-description>
-          {{ reservation.dateHeure | date:'dd/MM/yyyy HH:mm' }}
-        </mat-panel-description>
-      </mat-expansion-panel-header>
+    <!-- Liste -->
+    <div *ngIf="!loading" class="space-y-4">
 
-      <!-- DETAILS -->
-      <div class="space-y-4">
+      <div *ngFor="let r of reservations; trackBy: trackById"
+           class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
 
-        <div>
-          <p><strong>Statut :</strong> {{ reservation.statutReservation }}</p>
-        </div>
+        <!-- En-tête carte -->
+        <div class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-700 transition"
+             (click)="toggle(r.reservationId)">
 
-        <div>
-          <h4 class="font-semibold mb-2">Participants</h4>
-
-          <div class="space-y-2">
-            <div *ngFor="let p of reservation.participants; trackBy: trackByParticipantId"
-                 class="flex justify-between items-center p-3 bg-gray-50 rounded">
-
-              <span>
-                {{ p.nom }} {{ p.prenom }}
-                <span *ngIf="p.isMe" class="text-xs text-gray-500">(Vous)</span>
-              </span>
-
-              <mat-chip
-                [color]="p.paymentStatus === 'PAYE' ? 'primary' : 'warn'"
-                selected>
-                {{ p.paymentStatus === 'PAYE' ? 'Payé' : 'À payer' }}
-              </mat-chip>
-
+          <div class="flex items-center gap-3 min-w-0">
+            <span [class]="r.typeReservation === 'PUBLIC'
+                    ? 'bg-sky-900 text-sky-300'
+                    : 'bg-purple-900 text-purple-300'"
+                  class="px-2 py-0.5 text-xs rounded-full font-medium shrink-0">
+              {{ r.typeReservation }}
+            </span>
+            <div class="min-w-0">
+              <p class="font-medium text-white truncate">
+                {{ r.siteNom }} — {{ r.terrainNom }}
+              </p>
+              <p class="text-sm text-gray-400">
+                {{ r.dateHeure | date:'dd/MM/yyyy' }} à {{ r.dateHeure | date:'HH:mm' }}
+              </p>
             </div>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0 ml-3">
+            <span [class]="statusClass(r.statutReservation)"
+                  class="px-2 py-0.5 text-xs rounded-full hidden sm:inline">
+              {{ r.statutReservation }}
+            </span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="expandedId === r.reservationId"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
           </div>
         </div>
 
-        <!-- PAY BUTTON -->
-        <div *ngIf="hasToPay(reservation)" class="pt-4">
-          <button mat-raised-button color="primary"
-                  (click)="pay(reservation.reservationId)">
-            Payer ma part
-          </button>
+        <!-- Contenu développé -->
+        <div *ngIf="expandedId === r.reservationId"
+             class="border-t border-gray-700 p-4 space-y-4">
+
+          <!-- Participants -->
+          <div>
+            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+              Participants ({{ r.participants.length }} / 4)
+            </h4>
+            <div class="space-y-2">
+              <div *ngFor="let p of r.participants"
+                   class="flex justify-between items-center px-3 py-2.5 bg-gray-900 rounded-lg">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-full bg-sky-700 flex items-center justify-center
+                              text-xs font-bold shrink-0">
+                    {{ p.prenom[0] }}{{ p.nom[0] }}
+                  </div>
+                  <span class="text-sm text-gray-200">
+                    {{ p.prenom }} {{ p.nom }}
+                    <span *ngIf="p.isMe" class="text-xs text-sky-400 ml-1">(vous)</span>
+                  </span>
+                </div>
+                <span [class]="p.paymentStatus === 'PAYE'
+                        ? 'bg-green-900 text-green-300'
+                        : 'bg-yellow-900 text-yellow-300'"
+                      class="px-2 py-0.5 text-xs rounded-full shrink-0">
+                  {{ p.paymentStatus === 'PAYE' ? '✓ Payé' : '⚡ À payer' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap gap-2 pt-1">
+
+            <button *ngIf="hasToPay(r)"
+                    (click)="pay(r.reservationId)"
+                    class="px-4 py-2 rounded-lg text-sm font-medium text-white
+                           bg-sky-600 hover:bg-sky-500 transition">
+              💳 Payer ma part
+            </button>
+
+            <button *ngIf="r.isOrganizer"
+                    (click)="cancel(r.reservationId)"
+                    class="px-4 py-2 rounded-lg text-sm font-medium
+                           border border-red-600 text-red-400
+                           hover:bg-red-900 transition">
+              ✕ Annuler
+            </button>
+
+            <button *ngIf="!r.isOrganizer"
+                    (click)="leave(r.reservationId)"
+                    class="px-4 py-2 rounded-lg text-sm font-medium
+                           border border-gray-600 text-gray-400
+                           hover:bg-gray-700 transition">
+              Quitter
+            </button>
+
+          </div>
         </div>
 
       </div>
-
-    </mat-expansion-panel>
-
-  </mat-accordion>
-
-  <div *ngIf="loading" class="text-center py-8">
-    Chargement...
+    </div>
   </div>
 
 </div>

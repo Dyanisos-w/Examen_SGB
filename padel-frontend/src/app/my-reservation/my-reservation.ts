@@ -1,82 +1,80 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Reservations } from '../Service/reservations';
-import { MyReservation, ParticipantPayment } from '../Interface/my-reservation';
 import { CommonModule } from '@angular/common';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import { Reservations } from '../Service/reservations';
+import { MyReservation } from '../Interface/my-reservation';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-my-reservation',
-  imports: [
-    CommonModule,
-    MatExpansionModule,
-    MatChipsModule,
-    MatButtonModule,
-    MatIconModule
-  ],
-  templateUrl: './my-reservation.html',
   standalone: true,
+  imports: [CommonModule, RouterLink],
+  templateUrl: './my-reservation.html',
   styleUrls: ['./my-reservation.css']
 })
 export class MyReservationComponent implements OnInit, OnDestroy {
   reservations: MyReservation[] = [];
   loading = true;
+  expandedId: number | null = null;
   private destroy$ = new Subject<void>();
 
-  constructor(private reservationService: Reservations) {}
+  constructor(private service: Reservations) {}
 
-  ngOnInit(): void {
-    this.loadReservations();
-  }
+  ngOnInit(): void { this.load(); }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  loadReservations(): void {
-    this.reservationService.getMyReservations()
+  load(): void {
+    this.loading = true;
+    this.service.getMyReservations()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data: MyReservation[]) => {
-          this.reservations = data;
-          this.loading = false;
-        },
-        error: (error: any) => {
-          console.error('Erreur lors du chargement des réservations:', error);
-          this.loading = false;
-        }
+        next: (data) => { this.reservations = data; this.loading = false; },
+        error: ()    => { this.loading = false; }
       });
   }
 
-  pay(reservationId: number): void {
-    this.reservationService.payReservation(reservationId)
+  toggle(id: number): void {
+    this.expandedId = this.expandedId === id ? null : id;
+  }
+
+  pay(id: number): void {
+    this.service.payReservation(id)
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.loadReservations();
-        },
-        error: (error: any) => {
-          console.error('Erreur lors du paiement:', error);
-        }
-      });
+      .subscribe({ next: () => this.load() });
   }
 
-  hasToPay(reservation: MyReservation): boolean {
-    return reservation.participants.some(
-      (p: ParticipantPayment) => p.isMe && p.paymentStatus === 'A_PAYER'
-    );
+  cancel(id: number): void {
+    if (!confirm('Annuler cette réservation ?')) return;
+    this.service.cancelReservation(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.load() });
   }
 
-  trackByReservationId(index: number, reservation: MyReservation): number {
-    return reservation.reservationId;
+  leave(id: number): void {
+    if (!confirm('Quitter cette réservation ?')) return;
+    this.service.leaveReservation(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.load() });
   }
 
-  trackByParticipantId(index: number, participant: ParticipantPayment): string {
-    return participant.matricule;
+  hasToPay(r: MyReservation): boolean {
+    return r.participants.some(p => p.isMe && p.paymentStatus === 'A_PAYER');
   }
+
+  statusClass(statut: string): string {
+    switch (statut?.toUpperCase()) {
+      case 'OPEN':      return 'bg-green-900 text-green-300';
+      case 'FULL':      return 'bg-orange-900 text-orange-300';
+      case 'PRIVATE':   return 'bg-purple-900 text-purple-300';
+      case 'CANCELLED': return 'bg-red-900 text-red-300';
+      default:          return 'bg-gray-700 text-gray-300';
+    }
+  }
+
+  trackById(_: number, r: MyReservation): number { return r.reservationId; }
 }

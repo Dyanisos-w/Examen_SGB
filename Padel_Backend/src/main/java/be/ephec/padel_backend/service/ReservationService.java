@@ -443,4 +443,13 @@ public class ReservationService {
                         && r.getDateReservation().equals(date)
                         && r.getHeureDebut().equals(heureDebut));
     }
+    public void payerReservation(Integer reservationId, String userId) {
+        ReservationUtilisateur ru = reservationUtilisateurRepository
+                .findByIdReservationIdAndUtilisateur(reservationId, userId)
+                .orElseThrow(() -> new RuntimeException("Participation introuvable"));
+
+        ru.setMontantPaye(ru.getMontantDu());
+        ru.setStatutPaiement("PAYE");
+        reservationUtilisateurRepository.save(ru);
+    }
 }

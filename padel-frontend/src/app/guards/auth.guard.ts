@@ -3,7 +3,7 @@ import { Router, CanActivateFn } from '@angular/router';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
-  const token = localStorage.getItem('accessToken');
+  const token = sessionStorage.getItem('access_token');
 
   if (token) {
     return true;

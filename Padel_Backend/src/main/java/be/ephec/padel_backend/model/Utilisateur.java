@@ -24,6 +24,9 @@ public class Utilisateur {
     @Column(name = "interdit_reservation_jusqua")
     private LocalDate interditReservationJusqua;
 
+    @Column (name = "password")
+    private String password;
+
     // Relation vers Site
     @ManyToOne
     @JoinColumn(name = "site_associated")
@@ -80,5 +83,25 @@ public class Utilisateur {
 
     public void setPenaltyEndDate(LocalDate date) {
         this.interditReservationJusqua = date;
+    }
+
+    public void setMatricule(String matricule) {
+        this.matricule = matricule;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
