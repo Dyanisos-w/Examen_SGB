@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { CalendarGrid } from './calendar-grid/calendar-grid';
 import { TerrainSelector } from './terrain-selector/terrain-selector';
 import { WeekNavigator } from './week-navigator/week-navigator';
@@ -11,6 +12,7 @@ import { WeekNavigator } from './week-navigator/week-navigator';
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     CalendarGrid,
     TerrainSelector,
     WeekNavigator

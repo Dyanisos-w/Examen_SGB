@@ -1,13 +1,11 @@
 <header class="h-20 bg-black text-white flex items-center px-10 border-b border-gray-800">
 
-  <!-- LEFT / LOGO -->
-  <div class="flex items-center gap-4">
-    <span class="text-2xl font-bold tracking-wide">
-      Le Logo
-    </span>
+  <!-- LOGO -->
+  <div class="flex items-center gap-4 shrink-0">
+    <span class="text-2xl font-bold tracking-wide">Padel</span>
   </div>
 
-  <!-- CENTER / NAV -->
+  <!-- NAV -->
   <nav class="flex-1 flex justify-center gap-8 text-sm uppercase tracking-wide">
 
     <a
@@ -15,40 +13,46 @@
       routerLinkActive="border-b-2 border-yellow-400 text-yellow-400"
       [routerLinkActiveOptions]="{ exact: true }"
       class="pb-1 hover:text-yellow-400 transition">
-      Home
+      Accueil
     </a>
 
     <a
-      routerLink="/podium"
+      routerLink="/reservation"
       routerLinkActive="border-b-2 border-yellow-400 text-yellow-400"
       class="pb-1 hover:text-yellow-400 transition">
-      Podium
+      Réserver
     </a>
 
     <a
-      routerLink="/reservations"
+      routerLink="/join-reservation"
       routerLinkActive="border-b-2 border-yellow-400 text-yellow-400"
       class="pb-1 hover:text-yellow-400 transition">
-      Reservation
+      Rejoindre
+    </a>
+
+    <a
+      routerLink="/my-reservations"
+      routerLinkActive="border-b-2 border-yellow-400 text-yellow-400"
+      class="pb-1 hover:text-yellow-400 transition">
+      Mes réservations
     </a>
 
   </nav>
 
-  <!-- RIGHT / AUTH -->
-  <div class="flex items-center gap-4">
+  <!-- AUTH -->
+  <div class="flex items-center gap-4 shrink-0">
 
     <a
       routerLink="/login"
       class="text-sm text-gray-300 hover:text-white transition">
-      Login
+      Connexion
     </a>
 
     <a
       routerLink="/register"
       class="text-sm border border-yellow-400 text-yellow-400
-             px-4 py-2 rounded
-             hover:bg-yellow-400 hover:text-black transition">
-      Sign Up
+             px-4 py-2 rounded hover:bg-yellow-400 hover:text-black transition">
+      S'inscrire
     </a>
 
   </div>
