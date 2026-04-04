@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CalendarGrid } from './calendar-grid/calendar-grid';
 import { TerrainSelector } from './terrain-selector/terrain-selector';
 import { WeekNavigator } from './week-navigator/week-navigator';
@@ -25,6 +25,8 @@ export class Reservation implements OnInit {
   timeSlots: string[] = [];
   selectedTerrainId!: number;
 
+  constructor(private router: Router) {}
+
   ngOnInit(): void {
     this.generateWeek();
     this.generateTimeSlots();
@@ -44,6 +46,20 @@ export class Reservation implements OnInit {
     this.currentDate = new Date(this.currentDate);
     this.currentDate.setDate(this.currentDate.getDate() + 7);
     this.generateWeek();
+  }
+
+  onSlotSelected(event: { day: Date; slot: string }): void {
+    const heureDebut = event.slot;
+    const heureFin = this.addMinutesToTime(event.slot, 90);
+
+    this.router.navigate(['/reservation/confirmation'], {
+      state: {
+        terrainId: this.selectedTerrainId,
+        date: this.toLocalIsoDate(event.day),
+        heureDebut,
+        heureFin
+      }
+    });
   }
 
   private generateWeek() {
@@ -79,5 +95,20 @@ export class Reservation implements OnInit {
       (this.currentDate.getTime() - oneJan.getTime()) / 86400000
     );
     return Math.ceil((this.currentDate.getDay() + 1 + numberOfDays) / 7);
+  }
+
+  private addMinutesToTime(time: string, minutesToAdd: number): string {
+    const [hours, minutes] = time.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + minutesToAdd;
+    const endHours = Math.floor((totalMinutes / 60) % 24);
+    const endMinutes = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+  }
+
+  private toLocalIsoDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

@@ -40,7 +40,7 @@ export class LoginComponent {
       },
       error:(error) => {
         console.log("login failed with error: ", error);
-        alert("Login failed: " + (error.error?.message || error.statusText || 'Unknown error'));
+        alert("Login failed: " + (error.error?.message || error.statusText || 'Unkwown user'));
       }
     })
   }
