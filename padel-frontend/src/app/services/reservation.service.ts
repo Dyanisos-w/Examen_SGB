@@ -1,13 +1,22 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+ import { catchError, map, Observable, of } from 'rxjs';
 import { Reservation } from '../models/reservation.model';
+
+export interface CreateReservationRequest {
+  siteId: number;
+  terrainId: number;
+  date: string;
+  heureDebut: string;
+  typeReservation: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReservationService {
   private apiUrl = 'http://localhost:8080/api/reservations';
+  private usersApiUrl = 'http://localhost:8080/utilisateurs';
 
   constructor(private http: HttpClient) {}
 
@@ -21,6 +30,17 @@ export class ReservationService {
 
   createReservation(reservation: Partial<Reservation>): Observable<Reservation> {
     return this.http.post<Reservation>(this.apiUrl, reservation);
+  }
+
+  createReservationRequest(payload: CreateReservationRequest): Observable<number> {
+    return this.http.post<number>(this.apiUrl, payload);
+  }
+
+  validateMatriculeExists(matricule: string): Observable<boolean> {
+    return this.http.get(`${this.usersApiUrl}/${encodeURIComponent(matricule)}`).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   updateReservation(id: number, reservation: Partial<Reservation>): Observable<Reservation> {

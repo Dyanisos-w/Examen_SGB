@@ -13,7 +13,7 @@
     (terrainChange)="onTerrainChange($event)">
   </app-terrain-selector>
 
-  <div class="space-y-6 mt-6">>
+  <div class="space-y-6 mt-6">
     <app-week-navigator
       [weekNumber]="weekNumber"
       (previous)="previousWeek()"
@@ -24,7 +24,8 @@
   <div class="space-y-6 mt-6">
     <app-calendar-grid
       [weekDates]="weekDates"
-      [timeSlots]="timeSlots">
+      [timeSlots]="timeSlots"
+      (slotSelected)="onSlotSelected($event)">
     </app-calendar-grid>
   </div>
 

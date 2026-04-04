@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Reservations } from '../Service/reservations';
 import { MyReservation } from '../Interface/my-reservation';
 import { Subject } from 'rxjs';
@@ -17,11 +17,28 @@ export class MyReservationComponent implements OnInit, OnDestroy {
   reservations: MyReservation[] = [];
   loading = true;
   expandedId: number | null = null;
+  infoMessage = '';
   private destroy$ = new Subject<void>();
 
-  constructor(private service: Reservations) {}
+  constructor(
+    private service: Reservations,
+    private router: Router
+  ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    const navigation = this.router.getCurrentNavigation();
+    const state = (navigation?.extras.state || history.state) as {
+      paymentReminder?: boolean;
+      createdReservationId?: number;
+    };
+
+    if (state?.paymentReminder) {
+      const suffix = state.createdReservationId ? ` (id: ${state.createdReservationId})` : '';
+      this.infoMessage = `Reservation creee${suffix}. Vous pouvez maintenant payer dans cette liste.`;
+    }
+
+    this.load();
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

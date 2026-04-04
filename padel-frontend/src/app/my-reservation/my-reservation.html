@@ -12,7 +12,12 @@
 
     <!-- Header -->
     <h1 class="text-3xl font-bold mb-2">Mes Réservations</h1>
-    <p class="text-gray-400 mb-8">Toutes les réservations auxquelles vous participez.</p>
+    <p class="text-gray-400 mb-4">Toutes les réservations auxquelles vous participez.</p>
+
+    <p *ngIf="infoMessage"
+       class="mb-6 rounded-lg border border-sky-700 bg-sky-900/40 px-3 py-2 text-sm text-sky-200">
+      {{ infoMessage }}
+    </p>
 
     <!-- Loading -->
     <div *ngIf="loading" class="flex justify-center py-20">
