@@ -11,6 +11,52 @@ import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
 
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.dateReservation BETWEEN :start AND :end")
+    long countBetween(@Param("start") LocalDate start,
+                      @Param("end") LocalDate end);
+
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.dateReservation BETWEEN :start AND :end AND r.terrain.site.siteId = :siteId")
+    long countBetween(@Param("start") LocalDate start,
+                      @Param("end") LocalDate end,
+                      @Param("siteId") Integer siteId);
+
+    @Query("SELECT COUNT(DISTINCT r.utilisateur.matricule) FROM Reservation r WHERE r.dateReservation BETWEEN :start AND :end")
+    int countDistinct(@Param("start") LocalDate start,
+                      @Param("end") LocalDate end);
+
+    @Query("SELECT COUNT(DISTINCT r.utilisateur.matricule) FROM Reservation r WHERE r.dateReservation BETWEEN :start AND :end AND r.terrain.site.siteId = :siteId")
+    int countDistinct(@Param("start") LocalDate start,
+                      @Param("end") LocalDate end,
+                      @Param("siteId") Integer siteId);
+
+    @Query("SELECT r FROM Reservation r " +
+           "WHERE r.dateReservation BETWEEN :start AND :end " +
+           "ORDER BY r.dateReservation DESC, r.heureDebut DESC")
+    List<Reservation> findBetween(@Param("start") LocalDate start,
+                                  @Param("end") LocalDate end);
+
+    @Query("SELECT r FROM Reservation r " +
+           "WHERE r.dateReservation BETWEEN :start AND :end " +
+           "AND r.terrain.site.siteId = :siteId " +
+           "ORDER BY r.dateReservation DESC, r.heureDebut DESC")
+    List<Reservation> findBetween(@Param("start") LocalDate start,
+                                  @Param("end") LocalDate end,
+                                  @Param("siteId") Integer siteId);
+
+    @Query("SELECT COUNT(r) FROM Reservation r " +
+           "WHERE r.dateReservation BETWEEN :start AND :end " +
+           "AND UPPER(COALESCE(r.statut, '')) = 'CANCELLED'")
+    long countCancelledBetween(@Param("start") LocalDate start,
+                               @Param("end") LocalDate end);
+
+    @Query("SELECT COUNT(r) FROM Reservation r " +
+           "WHERE r.dateReservation BETWEEN :start AND :end " +
+           "AND r.terrain.site.siteId = :siteId " +
+           "AND UPPER(COALESCE(r.statut, '')) = 'CANCELLED'")
+    long countCancelledBetween(@Param("start") LocalDate start,
+                               @Param("end") LocalDate end,
+                               @Param("siteId") Integer siteId);
+
     @Query("SELECT COUNT(r) FROM Reservation r " +
            "WHERE r.terrain.site.siteId = :siteId " +
            "AND r.dateReservation = :matchDate " +

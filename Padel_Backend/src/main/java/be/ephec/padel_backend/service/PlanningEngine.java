@@ -2,10 +2,12 @@ package be.ephec.padel_backend.service;
 
 import be.ephec.padel_backend.DTO.PlanningSlotDto;
 import be.ephec.padel_backend.model.Site;
+import be.ephec.padel_backend.model.SiteOpeningHours;
 import be.ephec.padel_backend.model.Terrain;
 import be.ephec.padel_backend.model.Utilisateur;
 import be.ephec.padel_backend.repository.ReservationRepository;
 import be.ephec.padel_backend.repository.SiteRepository;
+import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,9 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PlanningEngine {
@@ -21,17 +25,22 @@ public class PlanningEngine {
     private final ReservationRepository reservationRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final SiteRepository siteRepository;
+    private final SiteOpeningHoursRepository siteOpeningHoursRepository;
 
     private static final int GLOBAL_UTILISATEUR_ADVANCE_DAYS = 21;
     private static final int SITE_UTILISATEUR_ADVANCE_DAYS   = 14;
     private static final int FREE_UTILISATEUR_ADVANCE_DAYS   = 5;
+    private static final LocalTime DEFAULT_OPENING_TIME = LocalTime.of(8, 0);
+    private static final LocalTime DEFAULT_CLOSING_TIME = LocalTime.of(22, 0);
 
     public PlanningEngine(ReservationRepository reservationRepository,
                           UtilisateurRepository utilisateurRepository,
-                          SiteRepository siteRepository) {
+                          SiteRepository siteRepository,
+                          SiteOpeningHoursRepository siteOpeningHoursRepository) {
         this.reservationRepository = reservationRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.siteRepository = siteRepository;
+        this.siteOpeningHoursRepository = siteOpeningHoursRepository;
     }
 
     public List<PlanningSlotDto> generateWeeklyPlanning(String userId, Integer siteId) {
@@ -41,12 +50,14 @@ public class PlanningEngine {
 
         LocalDate today = LocalDate.now();
         List<LocalDate> weekDates = getWeekDates(today);
-        List<LocalTime> slots = generateSlots();
+        Map<DayOfWeek, SiteOpeningHours> openingHoursByDay = getOpeningHoursByDay(siteId);
         LocalDate firstReservableDate = calculateFirstReservableDate(user);
 
         List<PlanningSlotDto> planning = new ArrayList<>();
 
         for (LocalDate date : weekDates) {
+            List<LocalTime> slots = generateSlots(openingHoursByDay.get(date.getDayOfWeek()));
+
             for (Terrain terrain : site.getTerrains()) {
                 for (LocalTime heure : slots) {
 
@@ -88,16 +99,36 @@ public class PlanningEngine {
     }
 
     public List<LocalTime> generateSlots() {
+        return generateSlots(null);
+    }
+
+    public List<LocalTime> generateSlots(SiteOpeningHours openingHours) {
         List<LocalTime> slots = new ArrayList<>();
 
-        LocalTime startTime = LocalTime.of(8, 0);
-        LocalTime endTime = LocalTime.of(22, 0);
+        if (openingHours != null && openingHours.isClosed()) {
+            return slots;
+        }
+
+        LocalTime startTime = openingHours != null && openingHours.getOpeningTime() != null
+                ? openingHours.getOpeningTime()
+                : DEFAULT_OPENING_TIME;
+        LocalTime endTime = openingHours != null && openingHours.getClosingTime() != null
+                ? openingHours.getClosingTime()
+                : DEFAULT_CLOSING_TIME;
 
         while (!startTime.plusMinutes(90).isAfter(endTime)) {
             slots.add(startTime);
             startTime = startTime.plusMinutes(105);
         }
         return slots;
+    }
+
+    private Map<DayOfWeek, SiteOpeningHours> getOpeningHoursByDay(Integer siteId) {
+        Map<DayOfWeek, SiteOpeningHours> openingHoursByDay = new EnumMap<>(DayOfWeek.class);
+        for (SiteOpeningHours openingHours : siteOpeningHoursRepository.findBySiteSiteId(siteId)) {
+            openingHoursByDay.put(openingHours.getDayOfWeek(), openingHours);
+        }
+        return openingHoursByDay;
     }
 
     private LocalDate calculateFirstReservableDate(Utilisateur utilisateur) {

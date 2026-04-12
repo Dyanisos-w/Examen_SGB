@@ -1,6 +1,7 @@
 package be.ephec.padel_backend.controller;
 import be.ephec.padel_backend.model.Terrain;
 import be.ephec.padel_backend.repository.TerrainRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -14,11 +15,15 @@ public class TerrainController {
     }
 
     @GetMapping
-    public List<Terrain> getAllTerrains() {
+    public List<Terrain> getAllTerrains(@RequestParam(required = false) Integer siteId) {
+        if (siteId != null) {
+            return terrainRepository.findBySiteSiteId(siteId);
+        }
         return terrainRepository.findAll();
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('GLOBALADMIN')")
     public Terrain createTerrain(@RequestBody Terrain terrain) {
         return terrainRepository.save(terrain);
     }

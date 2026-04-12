@@ -21,10 +21,24 @@
     </app-week-navigator>
   </div>
 
-  <div class="space-y-6 mt-6">
+  <!-- Légende -->
+  <div class="flex gap-6 mt-4 mb-2 text-xs text-gray-500">
+    <span class="flex items-center gap-1.5">
+      <span class="w-4 h-4 rounded bg-sky-100 inline-block"></span> Disponible
+    </span>
+    <span class="flex items-center gap-1.5">
+      <span class="w-4 h-4 rounded bg-red-100 inline-block"></span> Occupé
+    </span>
+    <span class="flex items-center gap-1.5">
+      <span class="w-4 h-4 rounded bg-gray-100 inline-block"></span> Passé
+    </span>
+  </div>
+
+  <div class="space-y-6 mt-2">
     <app-calendar-grid
       [weekDates]="weekDates"
       [timeSlots]="timeSlots"
+      [isOccupiedFn]="isOccupied.bind(this)"
       (slotSelected)="onSlotSelected($event)">
     </app-calendar-grid>
   </div>

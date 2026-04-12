@@ -1,4 +1,7 @@
 package be.ephec.padel_backend.service;
+import be.ephec.padel_backend.DTO.MyReservationDto;
+import be.ephec.padel_backend.DTO.ParticipantPaymentDto;
+import be.ephec.padel_backend.DTO.PublicReservationDto;
 import be.ephec.padel_backend.model.Reservation;
 import be.ephec.padel_backend.model.ReservationUtilisateur;
 import be.ephec.padel_backend.model.Terrain;
@@ -17,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -451,5 +455,61 @@ public class ReservationService {
         ru.setMontantPaye(ru.getMontantDu());
         ru.setStatutPaiement("PAYE");
         reservationUtilisateurRepository.save(ru);
+    }
+
+    // ─── DTO projection methods ────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<MyReservationDto> getUserReservationDtos(String userId) {
+        return getUserReservations(userId).stream()
+                .map(r -> toMyReservationDto(r, userId))
+                .collect(Collectors.toList());
+    }
+
+    private MyReservationDto toMyReservationDto(Reservation r, String currentUserId) {
+        MyReservationDto dto = new MyReservationDto();
+        dto.reservationId      = r.getIdReservation();
+        dto.dateHeure          = LocalDateTime.of(r.getDateReservation(), r.getHeureDebut()).toString();
+        dto.siteNom            = (r.getTerrain() != null && r.getTerrain().getSite() != null)
+                                     ? r.getTerrain().getSite().getNom() : "";
+        dto.terrainNom         = r.getTerrain() != null ? r.getTerrain().getNom() : "";
+        dto.typeReservation    = r.getTypeReservation();
+        dto.statutReservation  = r.getStatut();
+        dto.isOrganizer        = r.getCreateur() != null
+                                     && r.getCreateur().getMatricule().equalsIgnoreCase(currentUserId);
+
+        List<ReservationUtilisateur> participants =
+                reservationUtilisateurRepository.findByIdReservationId(r.getIdReservation());
+
+        dto.participants = participants.stream().map(ru -> {
+            ParticipantPaymentDto p = new ParticipantPaymentDto();
+            p.matricule     = ru.getUtilisateur().getMatricule();
+            p.nom           = ru.getUtilisateur().getNom();
+            p.prenom        = ru.getUtilisateur().getPrenom();
+            p.paymentStatus = "PAYE".equalsIgnoreCase(ru.getStatutPaiement()) ? "PAYE" : "A_PAYER";
+            p.isMe          = ru.getUtilisateur().getMatricule().equalsIgnoreCase(currentUserId);
+            return p;
+        }).collect(Collectors.toList());
+
+        return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public List<PublicReservationDto> getPublicReservationDtos(Integer siteId) {
+        return getPublicReservations(siteId).stream()
+                .map(this::toPublicReservationDto)
+                .collect(Collectors.toList());
+    }
+
+    private PublicReservationDto toPublicReservationDto(Reservation r) {
+        PublicReservationDto dto = new PublicReservationDto();
+        dto.reservationId = r.getIdReservation();
+        dto.dateHeure     = LocalDateTime.of(r.getDateReservation(), r.getHeureDebut()).toString();
+        dto.siteNom       = (r.getTerrain() != null && r.getTerrain().getSite() != null)
+                                ? r.getTerrain().getSite().getNom() : "";
+        dto.terrainNom    = r.getTerrain() != null ? r.getTerrain().getNom() : "";
+        dto.nbJoueurs     = reservationUtilisateurRepository.countByIdReservationId(r.getIdReservation());
+        dto.statut        = r.getStatut();
+        return dto;
     }
 }

@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import {RouterLink, RouterLinkActive} from '@angular/router';
+ import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -11,5 +11,15 @@ import {RouterLink, RouterLinkActive} from '@angular/router';
   styleUrl: './header.css',
 })
 export class Header {
+  private router = inject(Router);
 
+  get isLoggedIn(): boolean {
+    return !!sessionStorage.getItem('access_token');
+  }
+
+  logout(): void {
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    this.router.navigate(['/login']);
+  }
 }

@@ -1,6 +1,8 @@
 package be.ephec.padel_backend.controller;
 
 import be.ephec.padel_backend.DTO.CreateReservationRequestDto;
+import be.ephec.padel_backend.DTO.MyReservationDto;
+import be.ephec.padel_backend.DTO.PublicReservationDto;
 import be.ephec.padel_backend.model.Reservation;
 import be.ephec.padel_backend.service.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -40,17 +42,17 @@ public class ReservationController {
 
     /** Mes réservations */
     @GetMapping("/me")
-    public ResponseEntity<List<Reservation>> getMyReservations(
+    public ResponseEntity<List<MyReservationDto>> getMyReservations(
             @AuthenticationPrincipal UserDetails user) {
-        return ResponseEntity.ok(reservationService.getUserReservations(user.getUsername()));
+        return ResponseEntity.ok(reservationService.getUserReservationDtos(user.getUsername()));
     }
 
     /** Réservations publiques disponibles */
     @GetMapping("/public")
-    public ResponseEntity<List<Reservation>> getPublicReservations(
+    public ResponseEntity<List<PublicReservationDto>> getPublicReservations(
             @RequestParam(required = false) Integer siteId) {
         Integer id = siteId != null ? siteId : 1;
-        return ResponseEntity.ok(reservationService.getPublicReservations(id));
+        return ResponseEntity.ok(reservationService.getPublicReservationDtos(id));
     }
 
     /** Rejoindre une réservation publique */

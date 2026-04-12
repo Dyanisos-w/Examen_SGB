@@ -1,16 +1,21 @@
 spring:
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
-    username: sa
-    password: PadelDB!2026
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-
-
+    url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:com.microsoft.sqlserver.jdbc.SQLServerDriver}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        dialect: ${JPA_DIALECT:org.hibernate.dialect.SQLServerDialect}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 jwt:
-  secret: PadelProjetJWTSecretKeyMinimum32CharactersLong!!!
-  expiration: 3600000
-  refresh-expiration: 86400000
+  secret: ${JWT_SECRET:my-super-secret-key-which-is-very-long-123456}
+  expiration: ${JWT_EXPIRATION:3600000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}

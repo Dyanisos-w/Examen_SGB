@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TerrainService, TerrainDto } from '../../services/terrain.service';
 
 @Component({
   selector: 'app-terrain-selector',
@@ -8,18 +9,45 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule]
 })
-export class TerrainSelector {
+export class TerrainSelector implements OnInit {
 
   @Output() terrainChange = new EventEmitter<number>();
 
-  terrains = [
-    { id: 1, name: 'Terrain 1' },
-    { id: 2, name: 'Terrain 2' },
-    { id: 3, name: 'Terrain 3' }
-  ];
+  terrains: TerrainDto[] = [];
+  loading = true;
+  selectedTerrainId: number | null = null;
 
-  selectTerrain(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    this.terrainChange.emit(Number(value));
+  constructor(private terrainService: TerrainService) {}
+
+  ngOnInit(): void {
+    const siteId = this.readSiteIdFromToken();
+    this.terrainService.getTerrains(siteId ?? undefined).subscribe({
+      next: (terrains) => {
+        this.terrains = terrains;
+        this.loading = false;
+        if (terrains.length > 0) {
+          this.selectedTerrainId = terrains[0].terrainId;
+          this.terrainChange.emit(terrains[0].terrainId);
+        }
+      },
+      error: () => { this.loading = false; }
+    });
+  }
+
+  selectTerrain(event: Event): void {
+    const value = +(event.target as HTMLSelectElement).value;
+    this.selectedTerrainId = value;
+    this.terrainChange.emit(value);
+  }
+
+  private readSiteIdFromToken(): number | null {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload?.siteId ?? null;
+    } catch {
+      return null;
+    }
   }
 }
