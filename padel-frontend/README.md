@@ -2,6 +2,18 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.0.
 
+## Runtime configuration
+
+API URLs are centralized via Angular environments:
+
+- `src/environments/environment.ts`
+- `src/environments/environment.development.ts`
+- `src/environments/environment.production.ts`
+
+Main key:
+
+- `apiBaseUrl` (example: `http://localhost:8080`)
+
 ## Development server
 
 To start a local development server, run:

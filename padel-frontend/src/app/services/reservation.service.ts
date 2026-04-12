@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
  import { catchError, map, Observable, of } from 'rxjs';
 import { Reservation } from '../models/reservation.model';
+import { environment } from '../../environments/environment';
 
 export interface CreateReservationRequest {
   siteId: number;
@@ -11,12 +12,21 @@ export interface CreateReservationRequest {
   typeReservation: string;
 }
 
+export interface PlanningSlot {
+  terrainId: number;
+  siteId: number;
+  date: string;       // "2024-04-15"
+  heure: string;      // "08:00:00"
+  disponible: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ReservationService {
-  private apiUrl = 'http://localhost:8080/api/reservations';
-  private usersApiUrl = 'http://localhost:8080/utilisateurs';
+  private apiUrl = `${environment.apiBaseUrl}/api/reservations`;
+  private usersApiUrl = `${environment.apiBaseUrl}/utilisateurs`;
+  private planningApiUrl = `${environment.apiBaseUrl}/api/planning`;
 
   constructor(private http: HttpClient) {}
 
@@ -34,6 +44,12 @@ export class ReservationService {
 
   createReservationRequest(payload: CreateReservationRequest): Observable<number> {
     return this.http.post<number>(this.apiUrl, payload);
+  }
+
+  getPlanning(userId: string, siteId: number): Observable<PlanningSlot[]> {
+    return this.http.get<PlanningSlot[]>(this.planningApiUrl, {
+      params: { userId, siteId: siteId.toString() }
+    });
   }
 
   validateMatriculeExists(matricule: string): Observable<boolean> {

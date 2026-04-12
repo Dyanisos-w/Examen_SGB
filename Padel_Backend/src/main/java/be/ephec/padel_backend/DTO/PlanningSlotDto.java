@@ -7,6 +7,8 @@ public class PlanningSlotDto {
     private LocalDate date;
     private LocalTime heure;
     private boolean disponible;
+    private Integer terrainId;
+    private Integer siteId;
 
     public LocalDate getDate() {
         return date;
@@ -32,9 +34,19 @@ public class PlanningSlotDto {
         this.disponible = disponible;
     }
 
-    public void setSiteId(Integer siteId) {
+    public Integer getTerrainId() {
+        return terrainId;
     }
 
     public void setTerrainId(Integer terrainId) {
+        this.terrainId = terrainId;
+    }
+
+    public Integer getSiteId() {
+        return siteId;
+    }
+
+    public void setSiteId(Integer siteId) {
+        this.siteId = siteId;
     }
 }

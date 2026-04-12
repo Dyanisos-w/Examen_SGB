@@ -1,6 +1,7 @@
 package be.ephec.padel_backend.controller;
 import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.repository.SiteRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class SiteController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('GLOBALADMIN')")
     public Site createSite(@RequestBody Site site) {
         return siteRepository.save(site);
     }

@@ -6,10 +6,10 @@
     <!-- HEADER -->
     <ng-container *ngFor="let day of weekDates">
       <div class="text-center py-4 border-b border-gray-200 bg-gray-50">
-        <div class="font-semibold text-gray-700">
-          {{ day | date:'EEEE' }}
+        <div class="font-semibold text-gray-700 text-sm">
+          {{ day | date:'EEE' }}
         </div>
-        <div class="text-sm text-gray-500">
+        <div class="text-xs text-gray-500">
           {{ day | date:'dd/MM' }}
         </div>
       </div>
@@ -19,16 +19,15 @@
     <ng-container *ngFor="let slot of timeSlots">
       <ng-container *ngFor="let day of weekDates">
         <div
-          class="h-12 flex items-center justify-center
-                 border border-gray-100
-                 text-sm text-gray-600
-                 hover:bg-sky-100
-                 hover:text-sky-700
-                 cursor-pointer
-                 transition duration-150"
+          [class]="isPast(day, slot)
+            ? 'h-10 flex items-center justify-center border border-gray-100 bg-gray-50 text-xs text-gray-300 cursor-not-allowed'
+            : isOccupied(day, slot)
+              ? 'h-10 flex items-center justify-center border border-gray-100 bg-red-50 text-xs text-red-400 cursor-not-allowed'
+              : 'h-10 flex items-center justify-center border border-gray-100 text-xs text-gray-500 hover:bg-sky-50 hover:text-sky-700 cursor-pointer transition duration-150'"
           (click)="onSlotClick(day, slot)">
 
-          {{ slot }}
+          <span *ngIf="!isPast(day, slot) && isOccupied(day, slot)">✕</span>
+          <span *ngIf="!isPast(day, slot) && !isOccupied(day, slot)">{{ slot }}</span>
 
         </div>
       </ng-container>
