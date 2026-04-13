@@ -10,10 +10,29 @@
   </a>
 
   <app-terrain-selector
+    [siteId]="selectedSiteId"
     (terrainChange)="onTerrainChange($event)">
   </app-terrain-selector>
 
   <div class="space-y-6 mt-6">
+    <div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
+      <span class="text-sm text-gray-600">Site</span>
+
+      <span *ngIf="loadingSites" class="text-gray-400 text-sm">Chargement des sites...</span>
+
+      <select
+        *ngIf="!loadingSites && canChooseSite"
+        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500"
+        [value]="selectedSiteId"
+        (change)="onSiteChange(($any($event.target)).value)">
+        <option *ngFor="let site of sites" [value]="site.siteId">{{ site.nom }}</option>
+      </select>
+
+      <span *ngIf="!loadingSites && !canChooseSite" class="px-3 py-2 rounded-lg bg-gray-100 text-sm text-gray-700">
+        {{ getSelectedSiteName() }}
+      </span>
+    </div>
+
     <app-week-navigator
       [weekNumber]="weekNumber"
       (previous)="previousWeek()"
@@ -37,7 +56,7 @@
   <div class="space-y-6 mt-2">
     <app-calendar-grid
       [weekDates]="weekDates"
-      [timeSlots]="timeSlots"
+      [getSlotsForDayFn]="getSlotsForDay.bind(this)"
       [isOccupiedFn]="isOccupied.bind(this)"
       (slotSelected)="onSlotSelected($event)">
     </app-calendar-grid>

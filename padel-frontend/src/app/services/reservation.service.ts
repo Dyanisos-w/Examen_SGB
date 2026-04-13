@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
  import { catchError, map, Observable, of } from 'rxjs';
 import { Reservation } from '../models/reservation.model';
 import { environment } from '../../environments/environment';
@@ -46,9 +46,14 @@ export class ReservationService {
     return this.http.post<number>(this.apiUrl, payload);
   }
 
-  getPlanning(userId: string, siteId: number): Observable<PlanningSlot[]> {
+  getPlanning(userId: string, siteId: number, date: string): Observable<PlanningSlot[]> {
+    const params = new HttpParams()
+      .set('userId', userId)
+      .set('siteId', siteId.toString())
+      .set('date', date);
+
     return this.http.get<PlanningSlot[]>(this.planningApiUrl, {
-      params: { userId, siteId: siteId.toString() }
+      params
     });
   }
 

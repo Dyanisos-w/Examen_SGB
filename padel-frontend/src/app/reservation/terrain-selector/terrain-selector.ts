@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TerrainService, TerrainDto } from '../../services/terrain.service';
 
@@ -9,45 +9,78 @@ import { TerrainService, TerrainDto } from '../../services/terrain.service';
   standalone: true,
   imports: [CommonModule]
 })
-export class TerrainSelector implements OnInit {
+export class TerrainSelector implements OnChanges {
 
-  @Output() terrainChange = new EventEmitter<number>();
+  @Input() siteId: number | null = null;
+  @Output() terrainChange = new EventEmitter<number | null>();
 
   terrains: TerrainDto[] = [];
   loading = true;
+  loadError: string | null = null;
   selectedTerrainId: number | null = null;
 
-  constructor(private terrainService: TerrainService) {}
+  constructor(
+    private terrainService: TerrainService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  ngOnInit(): void {
-    const siteId = this.readSiteIdFromToken();
-    this.terrainService.getTerrains(siteId ?? undefined).subscribe({
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['siteId']) {
+      return;
+    }
+
+    const prev = changes['siteId'].previousValue;
+    const curr = changes['siteId'].currentValue;
+    console.log(`🗺️ [TerrainSelector] ngOnChanges siteId: ${prev} → ${curr}`);
+
+    if (!this.siteId) {
+      this.loading = false;
+      this.terrains = [];
+      this.selectedTerrainId = null;
+      this.terrainChange.emit(null);
+      console.warn('⚠️ [TerrainSelector] siteId null → emit(null)');
+      return;
+    }
+
+    this.loading = true;
+    this.loadError = null;
+    console.log(`📡 [TerrainSelector] GET /terrains?siteId=${this.siteId}`);
+
+    this.terrainService.getTerrains(this.siteId).subscribe({
       next: (terrains) => {
         this.terrains = terrains;
         this.loading = false;
+        this.loadError = null;
+        console.log('✅ [TerrainSelector] Terrains reçus :', terrains.map(t => `[${t.terrainId}] ${t.nom}`));
+
         if (terrains.length > 0) {
           this.selectedTerrainId = terrains[0].terrainId;
           this.terrainChange.emit(terrains[0].terrainId);
+          console.log('➡️ [TerrainSelector] terrainChange émis → terrainId:', terrains[0].terrainId);
+        } else {
+          this.selectedTerrainId = null;
+          this.terrainChange.emit(null);
+          console.warn('⚠️ [TerrainSelector] Aucun terrain pour siteId', this.siteId, '→ emit(null)');
         }
+
+        // Force le re-render du <select> terrain sans zone.js
+        this.cdr.detectChanges();
       },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        this.loading = false;
+        this.loadError = 'Impossible de charger les terrains.';
+        this.selectedTerrainId = null;
+        this.terrainChange.emit(null);
+        console.error('❌ [TerrainSelector] Erreur GET /terrains :', err);
+        this.cdr.detectChanges();
+      }
     });
   }
 
   selectTerrain(event: Event): void {
     const value = +(event.target as HTMLSelectElement).value;
-    this.selectedTerrainId = value;
-    this.terrainChange.emit(value);
-  }
-
-  private readSiteIdFromToken(): number | null {
-    const token = sessionStorage.getItem('access_token');
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload?.siteId ?? null;
-    } catch {
-      return null;
-    }
+    this.selectedTerrainId = value || null;
+    this.terrainChange.emit(this.selectedTerrainId);
+    console.log('🖱️ [TerrainSelector] Sélection manuelle → terrainId:', this.selectedTerrainId);
   }
 }

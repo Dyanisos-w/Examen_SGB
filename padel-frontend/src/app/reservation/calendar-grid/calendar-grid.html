@@ -16,21 +16,21 @@
     </ng-container>
 
     <!-- SLOTS -->
-    <ng-container *ngFor="let slot of timeSlots">
-      <ng-container *ngFor="let day of weekDates">
-        <div
-          [class]="isPast(day, slot)
-            ? 'h-10 flex items-center justify-center border border-gray-100 bg-gray-50 text-xs text-gray-300 cursor-not-allowed'
-            : isOccupied(day, slot)
-              ? 'h-10 flex items-center justify-center border border-gray-100 bg-red-50 text-xs text-red-400 cursor-not-allowed'
-              : 'h-10 flex items-center justify-center border border-gray-100 text-xs text-gray-500 hover:bg-sky-50 hover:text-sky-700 cursor-pointer transition duration-150'"
-          (click)="onSlotClick(day, slot)">
-
-          <span *ngIf="!isPast(day, slot) && isOccupied(day, slot)">✕</span>
-          <span *ngIf="!isPast(day, slot) && !isOccupied(day, slot)">{{ slot }}</span>
-
-        </div>
-      </ng-container>
+    <ng-container *ngFor="let day of weekDates">
+      <div class="border-r border-gray-100 last:border-r-0">
+        <ng-container *ngFor="let slot of slotsForDay(day)">
+          <div
+            [class]="isPast(day, slot)
+              ? 'h-10 flex items-center justify-center border-b border-gray-100 bg-gray-50 text-xs text-gray-300 cursor-not-allowed'
+              : isOccupied(day, slot)
+                ? 'h-10 flex items-center justify-center border-b border-gray-100 bg-red-50 text-xs text-red-400 cursor-not-allowed'
+                : 'h-10 flex items-center justify-center border-b border-gray-100 text-xs text-gray-500 hover:bg-sky-50 hover:text-sky-700 cursor-pointer transition duration-150'"
+            (click)="onSlotClick(day, slot)">
+            <span *ngIf="!isPast(day, slot) && isOccupied(day, slot)">✕</span>
+            <span *ngIf="!isPast(day, slot) && !isOccupied(day, slot)">{{ slot }}</span>
+          </div>
+        </ng-container>
+      </div>
     </ng-container>
 
   </div>

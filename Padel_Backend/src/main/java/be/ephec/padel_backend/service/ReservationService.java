@@ -469,6 +469,7 @@ public class ReservationService {
     private MyReservationDto toMyReservationDto(Reservation r, String currentUserId) {
         MyReservationDto dto = new MyReservationDto();
         dto.reservationId      = r.getIdReservation();
+        dto.terrainId          = r.getTerrain() != null ? r.getTerrain().getTerrainId() : null;
         dto.dateHeure          = LocalDateTime.of(r.getDateReservation(), r.getHeureDebut()).toString();
         dto.siteNom            = (r.getTerrain() != null && r.getTerrain().getSite() != null)
                                      ? r.getTerrain().getSite().getNom() : "";
@@ -504,6 +505,7 @@ public class ReservationService {
     private PublicReservationDto toPublicReservationDto(Reservation r) {
         PublicReservationDto dto = new PublicReservationDto();
         dto.reservationId = r.getIdReservation();
+        dto.terrainId     = r.getTerrain() != null ? r.getTerrain().getTerrainId() : null;
         dto.dateHeure     = LocalDateTime.of(r.getDateReservation(), r.getHeureDebut()).toString();
         dto.siteNom       = (r.getTerrain() != null && r.getTerrain().getSite() != null)
                                 ? r.getTerrain().getSite().getNom() : "";

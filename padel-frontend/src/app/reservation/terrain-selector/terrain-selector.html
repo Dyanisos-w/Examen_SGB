@@ -3,12 +3,17 @@
   <div class="flex gap-4 items-center">
 
     <span *ngIf="loading" class="text-gray-400 text-sm">Chargement des terrains…</span>
+    <span *ngIf="!loading && loadError" class="text-red-500 text-sm">{{ loadError }}</span>
 
     <select
-      *ngIf="!loading"
+      *ngIf="!loading && !loadError"
       class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500"
       [value]="selectedTerrainId"
       (change)="selectTerrain($event)">
+
+      <option *ngIf="terrains.length === 0" [value]="''" disabled>
+        Aucun terrain disponible
+      </option>
 
       <option *ngFor="let terrain of terrains"
               [value]="terrain.terrainId">

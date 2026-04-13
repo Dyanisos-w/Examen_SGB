@@ -92,4 +92,18 @@ public interface ReservationRepository extends JpaRepository<Reservation, Intege
                                                              @Param("dateMin") LocalDate dateMin);
 
     List<Reservation> findByDateReservationAndStatutNot(LocalDate dateReservation, String statut);
+
+    /**
+     * Charge en UNE seule requête tous les créneaux occupés pour un site et une plage de dates.
+     * Remplace les N×M appels à existsByTerrainAndDateAndHeure dans PlanningEngine.
+     * Retourne des Object[3] : [terrainId, dateReservation, heureDebut]
+     */
+    @Query("SELECT r.terrain.terrainId, r.dateReservation, r.heureDebut " +
+           "FROM Reservation r " +
+           "WHERE r.terrain.site.siteId = :siteId " +
+           "AND r.dateReservation BETWEEN :startDate AND :endDate " +
+           "AND UPPER(COALESCE(r.statut, '')) <> 'CANCELLED'")
+    List<Object[]> findOccupiedSlotsForWeek(@Param("siteId") Integer siteId,
+                                             @Param("startDate") LocalDate startDate,
+                                             @Param("endDate") LocalDate endDate);
 }
