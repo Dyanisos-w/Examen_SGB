@@ -1,5 +1,6 @@
 package be.ephec.padel_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +16,7 @@ public class Terrain {
 
     @ManyToOne
     @JoinColumn(name = "site_id", nullable = false)
+    @JsonBackReference
     private Site site;
 
     public Terrain() {}

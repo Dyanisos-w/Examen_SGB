@@ -3,10 +3,12 @@ import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.repository.SiteRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/sites")
+@RequestMapping(value = "/sites", produces = "application/json")
 public class SiteController {
     private final SiteRepository siteRepository;
 
@@ -14,20 +16,28 @@ public class SiteController {
         this.siteRepository = siteRepository;
     }
 
-    @GetMapping
-    public List<Site> getAllSites() {
-        return siteRepository.findAll();
+    @GetMapping(produces = "application/json")
+    public List<SitePublicDto> getAllSites() {
+        return siteRepository.findAll().stream()
+                .map(site -> new SitePublicDto(site.getSiteId(), site.getNom()))
+                .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
-    public Site getSite(@PathVariable Integer id) {
-        return siteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Site non trouvé"));
+    @GetMapping(value = "/{id}", produces = "application/json")
+    public SitePublicDto getSite(@PathVariable Integer id) {
+        Site site = siteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Site non trouve"));
+        return new SitePublicDto(site.getSiteId(), site.getNom());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('GLOBALADMIN')")
     public Site createSite(@RequestBody Site site) {
+        // Les terrains sont geres via un endpoint dedie.
+        site.setNombreTerrains(0);
         return siteRepository.save(site);
+    }
+
+    public record SitePublicDto(Integer siteId, String nom) {
     }
 }

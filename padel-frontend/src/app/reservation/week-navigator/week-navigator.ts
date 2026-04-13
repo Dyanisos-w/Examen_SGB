@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Output,Input} from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 
 
 @Component({
@@ -7,9 +7,14 @@ import {Component, EventEmitter, Output,Input} from '@angular/core';
   templateUrl: './week-navigator.html',
   styleUrl: './week-navigator.css',
 })
-export class WeekNavigator {
+export class WeekNavigator implements OnChanges {
   @Input() weekNumber!: number;
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['weekNumber']) {
+      console.log('🗓️ [WeekNavigator] weekNumber reçu :', this.weekNumber);
+    }
+  }
 }

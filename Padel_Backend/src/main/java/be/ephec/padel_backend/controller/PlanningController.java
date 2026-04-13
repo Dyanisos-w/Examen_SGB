@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -22,8 +23,9 @@ public class PlanningController {
     @GetMapping
     public List<PlanningSlotDto> getPlanning(
             @RequestParam String userId,
-            @RequestParam Integer siteId) {
+            @RequestParam Integer siteId,
+            @RequestParam(required = false) LocalDate date) {
 
-        return planningEngine.generateWeeklyPlanning(userId, siteId);
+        return planningEngine.generateWeeklyPlanning(userId, siteId, date);
     }
 }
