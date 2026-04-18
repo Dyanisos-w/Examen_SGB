@@ -8,6 +8,7 @@ import be.ephec.padel_backend.repository.ReservationRepository;
 import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.TerrainRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -44,11 +45,12 @@ public class PlanningEngine {
 
         // ── 1 query user ─────────────────────────────────────────────────────
         Utilisateur user = utilisateurRepository.findById(userId).orElseThrow();
-
+        LocalDate today = LocalDate.now();
+        LocalDate maxReservableDate = today.plusDays(getAdvanceDays(user));
         LocalDate planningReference = referenceDate != null ? referenceDate : LocalDate.now();
         List<LocalDate> weekDates = getWeekDates(planningReference);
         Map<DayOfWeek, SiteOpeningHours> openingHoursByDay = getOpeningHoursByDay(siteId);
-        LocalDate firstReservableDate = calculateFirstReservableDate(user);
+
 
         // ── 1 query terrains (remplace le lazy-load site.getTerrains()) ──────
         List<Terrain> terrains = terrainRepository.findBySiteSiteId(siteId);
@@ -67,8 +69,9 @@ public class PlanningEngine {
 
                     // Vérification en mémoire — 0 requête supplémentaire
                     String key = terrain.getTerrainId() + "_" + date + "_" + heure;
-                    boolean disponible = !date.isBefore(firstReservableDate)
-                            && !occupiedKeys.contains(key);
+                    boolean disponible = !date.isBefore(today) &&
+                            !date.isAfter(maxReservableDate) &&
+                            !occupiedKeys.contains(key);
 
                     PlanningSlotDto dto = new PlanningSlotDto();
                     dto.setSiteId(siteId);
@@ -144,19 +147,7 @@ public class PlanningEngine {
         return openingHoursByDay;
     }
 
-    private LocalDate calculateFirstReservableDate(Utilisateur utilisateur) {
 
-        LocalDate today = LocalDate.now();
-
-        if (utilisateur.getInterditReservationJusqua() != null &&
-                today.isBefore(utilisateur.getInterditReservationJusqua())) {
-            today = utilisateur.getInterditReservationJusqua();
-        }
-
-        int advanceDays = getAdvanceDays(utilisateur);
-
-        return today.plusDays(advanceDays);
-    }
 
     private int getAdvanceDays(Utilisateur utilisateur) {
 

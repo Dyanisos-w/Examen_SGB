@@ -1,0 +1,83 @@
+<div class="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
+  <div class="w-full max-w-lg bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-8">
+
+    <h2 class="text-2xl font-bold mb-6">Confirmer la réservation</h2>
+
+    <!-- Récapitulatif -->
+    <div class="bg-gray-900 rounded-lg p-4 mb-6 space-y-2 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-400">Terrain</span>
+        <span class="font-medium">Terrain {{ terrainId }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-400">Date</span>
+        <span class="font-medium">{{ reservationDate }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-400">Horaire</span>
+        <span class="font-medium">{{ heureDebut }} – {{ heureFin }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-400">Montant / joueur</span>
+        <span class="font-medium text-yellow-400">{{ montant }} €</span>
+      </div>
+    </div>
+
+    <!-- Type de réservation -->
+    <div class="mb-5">
+      <label class="block text-sm font-medium text-gray-300 mb-2">Type de réservation</label>
+      <select class="w-full rounded-lg bg-gray-700 border border-gray-600 text-white p-2.5 text-sm"
+              [(ngModel)]="typeReservation" name="typeReservation">
+        <option value="PUBLIC">Public (ouvert à tous)</option>
+        <option value="PRIVATE">Privé (invitations uniquement)</option>
+      </select>
+    </div>
+
+    <!-- Invités (si privé) -->
+    <div *ngIf="typeReservation === 'PRIVATE'" class="mb-5 space-y-2">
+      <label class="block text-sm font-medium text-gray-300">Inviter des joueurs (matricule)</label>
+      <input type="text" placeholder="Matricule joueur 1 (ex: L12345)"
+             class="w-full rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 text-sm p-2.5"
+             [(ngModel)]="matricule1" name="matricule1">
+      <input type="text" placeholder="Matricule joueur 2"
+             class="w-full rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 text-sm p-2.5"
+             [(ngModel)]="matricule2" name="matricule2">
+      <input type="text" placeholder="Matricule joueur 3"
+             class="w-full rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 text-sm p-2.5"
+             [(ngModel)]="matricule3" name="matricule3">
+    </div>
+
+    <p class="text-xs text-gray-500 mb-4">
+      Le paiement s'effectue dans <em>Mes réservations</em> après confirmation.
+    </p>
+
+    <!-- Messages -->
+    <p *ngIf="errorMessage"
+       class="mb-4 rounded-lg border border-red-700 bg-red-900/40 px-3 py-2 text-sm text-red-300">
+      {{ errorMessage }}
+    </p>
+    <p *ngIf="successMessage"
+       class="mb-4 rounded-lg border border-green-700 bg-green-900/40 px-3 py-2 text-sm text-green-300">
+      {{ successMessage }}
+    </p>
+
+    <!-- Boutons -->
+    <div class="flex gap-3">
+      <button
+        class="flex-1 py-2.5 rounded-lg text-sm font-medium text-white
+               bg-sky-600 hover:bg-sky-500 transition disabled:opacity-50"
+        [disabled]="isSubmitting"
+        (click)="confirmer()">
+        {{ isSubmitting ? 'Vérification…' : '✓ Confirmer' }}
+      </button>
+      <button
+        class="px-6 py-2.5 rounded-lg text-sm font-medium
+               border border-gray-600 text-gray-400 hover:bg-gray-700 transition"
+        [disabled]="isSubmitting"
+        (click)="annuler()">
+        Annuler
+      </button>
+    </div>
+
+  </div>
+</div>

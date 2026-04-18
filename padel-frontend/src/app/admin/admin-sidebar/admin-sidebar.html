@@ -1,0 +1,59 @@
+<aside
+  class="fixed left-0 top-0 z-50 h-full w-64 -translate-x-full border-r border-white/10 bg-[#111827] p-6 transition-transform duration-300 lg:static lg:translate-x-0"
+  [class.translate-x-0]="isOpen">
+
+  <div class="mb-8 text-xl font-bold">Padel Admin</div>
+
+  <nav class="space-y-2 text-gray-300">
+    <a
+      class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"
+      routerLink="/admin"
+      routerLinkActive="bg-white/10 text-white"
+      [routerLinkActiveOptions]="{ exact: true }"
+      (click)="navigate.emit()">
+      Dashboard
+    </a>
+
+    <a
+      class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"
+      routerLink="/reservation"
+      routerLinkActive="bg-white/10 text-white"
+      (click)="navigate.emit()">
+      Reservations
+    </a>
+
+    <a
+      class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"
+      routerLink="/my-reservations"
+      routerLinkActive="bg-white/10 text-white"
+      (click)="navigate.emit()">
+      Members
+    </a>
+
+    <a
+      class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"
+      routerLink="/admin/terrains/new"
+      routerLinkActive="bg-white/10 text-white"
+      (click)="navigate.emit()">
+      Create terrain
+    </a>
+
+    @if (isGlobalAdmin) {
+      <a
+        class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"
+        routerLink="/admin/local-admins/new"
+        routerLinkActive="bg-white/10 text-white"
+        (click)="navigate.emit()">
+        Create local admin
+      </a>
+
+      <a
+        class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"
+        routerLink="/admin/sites/new"
+        routerLinkActive="bg-white/10 text-white"
+        (click)="navigate.emit()">
+        Create site
+      </a>
+    }
+  </nav>
+</aside>

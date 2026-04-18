@@ -1,0 +1,23 @@
+<header class="flex items-center justify-between border-b border-white/10 p-4 lg:p-6">
+
+  <!-- Burger mobile -->
+  <button
+    class="lg:hidden text-2xl text-slate-300 hover:text-white"
+    (click)="menuClick.emit()">
+    ☰
+  </button>
+
+  <h2 class="text-xl font-semibold text-white">
+    Admin Dashboard
+  </h2>
+
+  <div class="flex items-center gap-3">
+    <span class="hidden sm:inline text-sm text-slate-400">{{ username }}</span>
+    <button
+      (click)="logout()"
+      class="rounded-md border border-slate-600 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition">
+      Déconnexion
+    </button>
+  </div>
+
+</header>
