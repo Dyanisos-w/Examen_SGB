@@ -46,6 +46,15 @@ export class ReservationService {
     return this.http.post<number>(this.apiUrl, payload);
   }
 
+  addPlayerToPrivateReservation(reservationId: number, joueurId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${reservationId}/players`, { joueurId });
+  }
+
+  cancelReservation(reservationId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${reservationId}/cancel`, {});
+  }
+
+
   getPlanning(userId: string, siteId: number, date: string): Observable<PlanningSlot[]> {
     const params = new HttpParams()
       .set('userId', userId)
