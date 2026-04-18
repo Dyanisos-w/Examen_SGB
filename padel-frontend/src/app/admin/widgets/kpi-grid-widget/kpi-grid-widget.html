@@ -1,0 +1,15 @@
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+  @for (item of items; track item.label) {
+    <app-ui-card [title]="item.label">
+      <div class="flex items-end justify-between gap-3">
+        <p class="text-2xl font-semibold text-white">{{ item.value }}</p>
+        <span
+          class="rounded-full px-2 py-1 text-xs font-medium"
+          [ngClass]="trendClass(item.trend)">
+          {{ trendPrefix(item.delta) }}{{ item.delta }}%
+        </span>
+      </div>
+    </app-ui-card>
+  }
+</div>
+

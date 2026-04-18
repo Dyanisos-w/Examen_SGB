@@ -1,0 +1,25 @@
+<div class="flex h-screen bg-gray-900 text-white">
+
+  <app-shared-sidebar-menu
+    [isOpen]="isSidebarOpen"
+    mode="admin"
+    (navigate)="closeSidebar()"
+    (logoutClick)="logout()">
+  </app-shared-sidebar-menu>
+
+  @if (isSidebarOpen) {
+    <div
+      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+      (click)="closeSidebar()">
+    </div>
+  }
+
+  <div class="flex flex-1 flex-col overflow-hidden">
+    <app-admin-topbar
+      (menuClick)="toggleSidebar()">
+    </app-admin-topbar>
+
+    <app-admin-content></app-admin-content>
+  </div>
+
+</div>
