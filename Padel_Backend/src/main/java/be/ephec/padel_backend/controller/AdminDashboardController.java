@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.LinkedHashMap;
+
 @RestController
 @RequestMapping("/api/admin/dashboard")
 @RequiredArgsConstructor
@@ -28,9 +32,10 @@ public class AdminDashboardController {
     @GetMapping("/overview")
     public ResponseEntity<DashboardOverviewDto> getOverview(@AuthenticationPrincipal UserDetails userDetails,
                                                             HttpServletRequest request,
-                                                            @RequestParam String period) {
+                                                            @RequestParam String period,
+                                                            @RequestParam(required = false) Integer siteId) {
         AdminAccessService.AdminScope scope = adminAccessService.resolveScope(userDetails, request);
-        DashboardOverviewDto overview = adminDashboardService.getOverview(scope, period);
+        DashboardOverviewDto overview = adminDashboardService.getOverview(scope, period, siteId);
         return ResponseEntity.ok(overview);
     }
 
@@ -48,5 +53,32 @@ public class AdminDashboardController {
         AdminAccessService.AdminScope scope = adminAccessService.resolveScope(userDetails, request);
         return ResponseEntity.ok(adminDashboardService.getMembers(scope));
     }
-}
 
+    @GetMapping("/admins")
+    public ResponseEntity<List<DashboardMemberRowDto>> getAdmins(@AuthenticationPrincipal UserDetails userDetails,
+                                                                  HttpServletRequest request) {
+        AdminAccessService.AdminScope scope = adminAccessService.resolveScope(userDetails, request);
+        return ResponseEntity.ok(adminDashboardService.getAdmins(scope));
+    }
+
+    // Nouvel endpoint : nombre de réservations par jour pour une période donnée
+    @GetMapping("/reservations-per-day")
+    public ResponseEntity<List<ChartPoint>> getReservationsPerDay(
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest request,
+            @RequestParam String period,
+            @RequestParam(required = false) Integer siteId) {
+
+        AdminAccessService.AdminScope scope = adminAccessService.resolveScope(userDetails, request);
+
+        Map<LocalDate, Long> result = adminDashboardService.getReservationsPerDay(scope, period, siteId);
+
+        List<ChartPoint> response = result.entrySet().stream()
+                .map(e -> new ChartPoint(e.getKey().toString(), e.getValue()))
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    public record ChartPoint(String label, Long value) {}
+}

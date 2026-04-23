@@ -2,10 +2,13 @@ package be.ephec.padel_backend.service;
 import be.ephec.padel_backend.DTO.MyReservationDto;
 import be.ephec.padel_backend.DTO.ParticipantPaymentDto;
 import be.ephec.padel_backend.DTO.PublicReservationDto;
+import be.ephec.padel_backend.model.Payment;
+import be.ephec.padel_backend.model.PaymentStatus;
 import be.ephec.padel_backend.model.Reservation;
 import be.ephec.padel_backend.model.ReservationUtilisateur;
 import be.ephec.padel_backend.model.Terrain;
 import be.ephec.padel_backend.model.Utilisateur;
+import be.ephec.padel_backend.repository.PaymentRepository;
 import be.ephec.padel_backend.repository.ReservationRepository;
 import be.ephec.padel_backend.repository.ReservationUtilisateurRepository;
 import be.ephec.padel_backend.repository.TerrainRepository;
@@ -35,15 +38,18 @@ public class ReservationService {
     private final ReservationUtilisateurRepository reservationUtilisateurRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final TerrainRepository terrainRepository;
+    private final PaymentRepository paymentRepository;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationUtilisateurRepository reservationUtilisateurRepository,
                               UtilisateurRepository utilisateurRepository,
-                              TerrainRepository terrainRepository) {
+                              TerrainRepository terrainRepository,
+                              PaymentRepository paymentRepository) {
         this.reservationRepository = reservationRepository;
         this.reservationUtilisateurRepository = reservationUtilisateurRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.terrainRepository = terrainRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     public Reservation createReservation(String userId,
@@ -455,6 +461,23 @@ public class ReservationService {
         ru.setMontantPaye(ru.getMontantDu());
         ru.setStatutPaiement("PAYE");
         reservationUtilisateurRepository.save(ru);
+
+        Payment payment = paymentRepository.findByReservationAndUtilisateur(
+                ru.getReservation(),
+                ru.getUtilisateur()
+        );
+
+        if (payment == null) {
+            payment = new Payment();
+            payment.setReservation(ru.getReservation());
+            payment.setUtilisateur(ru.getUtilisateur());
+        }
+
+        double amount = ru.getMontantDu() != null ? ru.getMontantDu() : 0.0;
+        payment.setMontant(BigDecimal.valueOf(amount));
+        payment.setStatutPaiement(PaymentStatus.PAYE);
+        payment.setDatePaiement(LocalDate.now());
+        paymentRepository.save(payment);
     }
 
     // ─── DTO projection methods ────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import be.ephec.padel_backend.DTO.admin.DashboardOverviewDto;
 import be.ephec.padel_backend.DTO.admin.DashboardMemberRowDto;
 import be.ephec.padel_backend.DTO.admin.DashboardReservationRowDto;
 import be.ephec.padel_backend.DTO.admin.PeriodFilterDto;
+import be.ephec.padel_backend.model.PaymentStatus;
 import be.ephec.padel_backend.model.Reservation;
 import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.model.SiteOpeningHours;
@@ -14,12 +15,15 @@ import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.SiteRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,8 +40,18 @@ public class AdminDashboardService {
     private static final LocalTime DEFAULT_OPENING_TIME = LocalTime.of(8, 0);
     private static final LocalTime DEFAULT_CLOSING_TIME = LocalTime.of(22, 0);
 
-    public DashboardOverviewDto getOverview(AdminAccessService.AdminScope scope, String period) {
+    public DashboardOverviewDto getOverview(AdminAccessService.AdminScope scope, String period, Integer requestedSiteId) {
         PeriodFilterDto filter = PeriodFilterDto.from(period);
+
+        if (requestedSiteId != null) {
+            if (scope.global()) {
+                return getOverviewBySite(requestedSiteId, filter);
+            }
+            if (scope.siteId().equals(requestedSiteId)) {
+                return getOverviewBySite(requestedSiteId, filter);
+            }
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "LOCALADMIN limite a son propre site");
+        }
 
         if (scope.global()) {
             return getOverviewAllSites(filter);
@@ -66,17 +80,24 @@ public class AdminDashboardService {
         return members.stream().map(this::toMemberRow).toList();
     }
 
+    public List<DashboardMemberRowDto> getAdmins(AdminAccessService.AdminScope scope) {
+        List<Utilisateur> admins = scope.global()
+                ? utilisateurRepository.findAdmins()
+                : utilisateurRepository.findAdminsBySiteId(scope.siteId());
+
+        return admins.stream().map(this::toMemberRow).toList();
+    }
+
     private DashboardOverviewDto getOverviewAllSites(PeriodFilterDto filter) {
         LocalDate start = filter.getStartDate();
         LocalDate end = filter.getEndDate();
 
         long totalReservations = reservationRepository.countBetween(start, end);
         long cancelledReservations = reservationRepository.countCancelledBetween(start, end);
-        long activeReservations = Math.max(0, totalReservations - cancelledReservations);
-        int totalPlayers = reservationRepository.countDistinct(start, end);
-        double totalRevenue = paymentRepository.sumBetween(start, end);
+        long totalPlayers = utilisateurRepository.countPlayers();
+        double totalRevenue = paymentRepository.sumBetween(start, end, PaymentStatus.PAYE);
         long availableSlots = computeAvailableSlotsAllSites(start, end);
-        double occupancyRate = toRate(activeReservations, availableSlots);
+        double occupancyRate = toRate(totalReservations, availableSlots);
         double cancellationRate = toRate(cancelledReservations, totalReservations);
 
         return new DashboardOverviewDto(totalReservations, totalRevenue, totalPlayers, occupancyRate, cancellationRate);
@@ -88,11 +109,10 @@ public class AdminDashboardService {
 
         long totalReservations = reservationRepository.countBetween(start, end, siteId);
         long cancelledReservations = reservationRepository.countCancelledBetween(start, end, siteId);
-        long activeReservations = Math.max(0, totalReservations - cancelledReservations);
-        int totalPlayers = reservationRepository.countDistinct(start, end, siteId);
-        double totalRevenue = paymentRepository.sumBetween(start, end, siteId);
+        long totalPlayers = utilisateurRepository.countPlayersBySiteId(siteId);
+        double totalRevenue = paymentRepository.sumBetween(start, end, siteId, PaymentStatus.PAYE);
         long availableSlots = computeAvailableSlotsBySite(siteId, start, end);
-        double occupancyRate = toRate(activeReservations, availableSlots);
+        double occupancyRate = toRate(totalReservations, availableSlots);
         double cancellationRate = toRate(cancelledReservations, totalReservations);
 
         return new DashboardOverviewDto(totalReservations, totalRevenue, totalPlayers, occupancyRate, cancellationRate);
@@ -192,5 +212,29 @@ public class AdminDashboardService {
                 siteNom,
                 utilisateur.getInterditReservationJusqua()
         );
+    }
+
+    // Retourne le nombre de réservations par jour pour une période donnée (et éventuellement un site)
+    public Map<LocalDate, Long> getReservationsPerDay(AdminAccessService.AdminScope scope, String period, Integer requestedSiteId) {
+        PeriodFilterDto filter = PeriodFilterDto.from(period);
+        LocalDate start = filter.getStartDate();
+        LocalDate end = filter.getEndDate();
+        Map<LocalDate, Long> result = new LinkedHashMap<>();
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            long count;
+            if (requestedSiteId != null) {
+                if (scope.global() || scope.siteId().equals(requestedSiteId)) {
+                    count = reservationRepository.countBetween(date, date, requestedSiteId);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "LOCALADMIN limite a son propre site");
+                }
+            } else if (scope.global()) {
+                count = reservationRepository.countBetween(date, date);
+            } else {
+                count = reservationRepository.countBetween(date, date, scope.siteId());
+            }
+            result.put(date, count);
+        }
+        return result;
     }
 }

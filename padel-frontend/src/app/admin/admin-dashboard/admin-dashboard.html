@@ -4,7 +4,8 @@
     [isOpen]="isSidebarOpen"
     mode="admin"
     (navigate)="closeSidebar()"
-    (logoutClick)="logout()">
+    (logoutClick)="logout()"
+    (siteChange)="onSiteChange($event)">
   </app-shared-sidebar-menu>
 
   @if (isSidebarOpen) {
@@ -19,7 +20,7 @@
       (menuClick)="toggleSidebar()">
     </app-admin-topbar>
 
-    <app-admin-content></app-admin-content>
+    <app-admin-content [selectedSiteId]="selectedSiteId"></app-admin-content>
   </div>
 
 </div>

@@ -7,6 +7,7 @@ import be.ephec.padel_backend.model.Utilisateur;
 import be.ephec.padel_backend.repository.ReservationRepository;
 import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.SiteRepository;
+ import be.ephec.padel_backend.repository.TerrainRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +37,8 @@ class PlanningEngineGenerateWeeklyPlanningTest {
     private SiteRepository siteRepository;
     @Mock
     private SiteOpeningHoursRepository siteOpeningHoursRepository;
+    @Mock
+    private TerrainRepository terrainRepository;
 
     @InjectMocks
     private PlanningEngine planningEngine;
@@ -51,6 +56,8 @@ class PlanningEngineGenerateWeeklyPlanningTest {
         when(utilisateurRepository.findById("G00001")).thenReturn(Optional.of(user));
         when(siteRepository.findById(1)).thenReturn(Optional.of(site));
         when(siteOpeningHoursRepository.findBySiteSiteId(1)).thenReturn(List.of());
+        when(terrainRepository.findBySiteSiteId(1)).thenReturn(List.of(t1, t2));
+        when(reservationRepository.findOccupiedSlotsForWeek(eq(1), any(), any())).thenReturn(List.of());
 
         List<PlanningSlotDto> planning = planningEngine.generateWeeklyPlanning("G00001", 1, LocalDate.now());
 
