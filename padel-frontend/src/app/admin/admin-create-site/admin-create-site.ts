@@ -21,8 +21,7 @@ export class AdminCreateSiteComponent {
 
   form = this.fb.group({
     nom: ['', Validators.required],
-    adresse: ['', Validators.required],
-    nombreTerrains: [1, [Validators.required, Validators.min(0)]]
+    adresse: ['', Validators.required]
   });
 
   onSubmit(): void {
@@ -34,17 +33,16 @@ export class AdminCreateSiteComponent {
       return;
     }
 
-    const { nom, adresse, nombreTerrains } = this.form.getRawValue();
+    const { nom, adresse } = this.form.getRawValue();
 
     this.isLoading = true;
     this.adminSiteManagementService.createSite({
       nom: nom!.trim(),
-      adresse: adresse!.trim(),
-      nombreTerrains: Number(nombreTerrains)
+      adresse: adresse!.trim()
     }).subscribe({
       next: (created) => {
         this.successMessage = `Site cree: ${created.nom} (id: ${created.siteId})`;
-        this.form.reset({ nom: '', adresse: '', nombreTerrains: 1 });
+        this.form.reset({ nom: '', adresse: '' });
         this.isLoading = false;
       },
       error: (error) => {

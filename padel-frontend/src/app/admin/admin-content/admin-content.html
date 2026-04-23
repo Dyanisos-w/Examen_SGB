@@ -1,49 +1,32 @@
-<main class="flex-1 p-4 lg:p-6 space-y-6 overflow-y-auto">
-  @if (dashboardData$ | async; as data) {
-    <app-kpi-grid-widget [items]="data.kpis"></app-kpi-grid-widget>
-
-    <app-ui-card title="Weekly activity" subtitle="Simple placeholder chart">
-      <div class="grid h-56 grid-cols-7 items-end gap-2 rounded-xl bg-slate-900/40 p-4">
-        @for (point of data.chartPoints; track point.label) {
-          <div class="flex flex-col items-center gap-2">
-            <div
-              class="w-full rounded-t bg-cyan-400/70"
-              [style.height.%]="point.value">
-            </div>
-            <span class="text-xs text-slate-300">{{ point.label }}</span>
-          </div>
-        }
-      </div>
+<main class="flex-1 p-4 lg:p-6 space-y-6 overflow-y-auto"> @if (dashboardData$ | async; as data) {
+  <app-kpi-grid-widget [items]="data.kpis"></app-kpi-grid-widget>
+  <app-ui-card title="Weekly activity" subtitle="Simple placeholder chart">
+    <div
+      class="grid h-56 grid-cols-7 items-end gap-2 rounded-xl bg-slate-900/40 p-4"> @for (point of data.chartPoints; track point.label) {
+      <div class="flex flex-col items-center gap-2">
+        <div class="w-full rounded-t bg-cyan-400/70" [style.height.%]="point.value"></div>
+        <span class="text-xs text-slate-300">{{ point.label }}</span></div>
+    } </div>
+  </app-ui-card>
+  <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+    <app-ui-card title="Équipe admin" subtitle="Administrateurs du site actif">
+      <div class="space-y-3"> @for (member of data.teamMembers; track member.name) {
+        <div class="flex items-center justify-between rounded-xl border border-white/10 p-3">
+          <div><p class="font-medium text-white">{{ member.name }}</p>
+            <p class="text-sm text-slate-300">{{ member.role }}</p></div>
+          <span class="rounded-full bg-slate-700 px-2 py-1 text-xs text-slate-200">{{ member.status }}</span></div>
+      } </div>
     </app-ui-card>
-
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-      <app-ui-card title="Team" subtitle="Members online status">
-        <div class="space-y-3">
-          @for (member of data.teamMembers; track member.name) {
-            <div class="flex items-center justify-between rounded-xl border border-white/10 p-3">
-              <div>
-                <p class="font-medium text-white">{{ member.name }}</p>
-                <p class="text-sm text-slate-300">{{ member.role }}</p>
-              </div>
-              <span class="rounded-full bg-slate-700 px-2 py-1 text-xs text-slate-200">{{ member.status }}</span>
-            </div>
-          }
-        </div>
-      </app-ui-card>
-
-      <app-ui-card title="Tasks" subtitle="Operations backlog">
-        <div class="space-y-3">
-          @for (task of data.taskItems; track task.title) {
-            <div class="flex items-center justify-between rounded-xl border border-white/10 p-3">
-              <div>
-                <p class="font-medium text-white">{{ task.title }}</p>
-                <p class="text-sm text-slate-300">{{ task.dueLabel }}</p>
-              </div>
-              <span class="rounded-full bg-slate-700 px-2 py-1 text-xs text-slate-200">{{ task.priority }}</span>
-            </div>
-          }
-        </div>
-      </app-ui-card>
-    </div>
-  }
-</main>
+    <app-ui-card title="Réservations" subtitle="Filtrées par site actif">
+      <div class="space-y-3"> @for (task of data.taskItems; track task.title) {
+        <div class="flex items-center justify-between rounded-xl border border-white/10 p-3">
+          <div><p class="font-medium text-white">{{ task.title }}</p>
+            <p class="text-sm text-slate-300">{{ task.dueLabel }}</p></div>
+          <span class="rounded-full bg-slate-700 px-2 py-1 text-xs text-slate-200">{{ task.priority }}</span></div>
+      }
+        @if (data.taskItems.length === 0) {
+          <p class="px-2 text-sm text-slate-400">Aucune réservation pour ce site.</p>
+        } </div>
+    </app-ui-card>
+  </div>
+} </main>

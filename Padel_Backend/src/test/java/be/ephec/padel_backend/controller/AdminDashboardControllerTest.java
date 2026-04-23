@@ -49,9 +49,9 @@ class AdminDashboardControllerTest {
         DashboardOverviewDto dto = new DashboardOverviewDto(50, 1250.0, 12, 61.5, 8.0);
 
         when(adminAccessService.resolveScope(userDetails, request)).thenReturn(scope);
-        when(adminDashboardService.getOverview(scope, "7d")).thenReturn(dto);
+        when(adminDashboardService.getOverview(scope, "7d", null)).thenReturn(dto);
 
-        var response = controller.getOverview(userDetails, request, "7d");
+        var response = controller.getOverview(userDetails, request, "7d", null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());

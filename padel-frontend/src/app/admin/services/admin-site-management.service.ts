@@ -5,7 +5,6 @@ import { environment } from '../../../environments/environment';
 export interface CreateSiteRequest {
   nom: string;
   adresse: string;
-  nombreTerrains: number;
 }
 
 export interface SiteResponse {

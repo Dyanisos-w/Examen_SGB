@@ -13,14 +13,21 @@ import java.util.List;
 
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
-    @Query("SELECT COALESCE(SUM(cast(p.montant as double)), 0.0) FROM Payment p WHERE p.datePaiement BETWEEN :start AND :end")
-    double sumBetween(@Param("start") LocalDate start,
-                      @Param("end") LocalDate end);
-
-    @Query("SELECT COALESCE(SUM(cast(p.montant as double)), 0.0) FROM Payment p WHERE p.datePaiement BETWEEN :start AND :end AND p.reservation.terrain.site.siteId = :siteId")
+    @Query("SELECT COALESCE(SUM(cast(p.montant as double)), 0.0) FROM Payment p " +
+           "WHERE p.datePaiement BETWEEN :start AND :end " +
+           "AND p.statutPaiement = :status")
     double sumBetween(@Param("start") LocalDate start,
                       @Param("end") LocalDate end,
-                      @Param("siteId") Integer siteId);
+                      @Param("status") PaymentStatus status);
+
+    @Query("SELECT COALESCE(SUM(cast(p.montant as double)), 0.0) FROM Payment p " +
+           "WHERE p.datePaiement BETWEEN :start AND :end " +
+           "AND p.reservation.terrain.site.siteId = :siteId " +
+           "AND p.statutPaiement = :status")
+    double sumBetween(@Param("start") LocalDate start,
+                      @Param("end") LocalDate end,
+                      @Param("siteId") Integer siteId,
+                      @Param("status") PaymentStatus status);
 
     List<Payment> findByReservation(Reservation reservation);
 

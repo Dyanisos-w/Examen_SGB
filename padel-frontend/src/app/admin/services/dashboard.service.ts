@@ -22,23 +22,34 @@ export class DashboardService {
 
   constructor(private readonly http: HttpClient) {}
 
-  getDashboardData(period: DashboardPeriod = '7d'): Observable<DashboardData> {
+  getDashboardData(period: DashboardPeriod = '7d', siteId: number | 'ALL' = 'ALL'): Observable<DashboardData> {
 	return forkJoin({
 	  overview: this.http.get<DashboardOverviewApi>(`${this.apiUrl}/overview`, {
-		params: { period },
+		params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() }
 	  }),
-	  reservations: this.http.get<DashboardReservationRowApi[]>(`${this.apiUrl}/reservations`, {
-		params: { period },
-	  }),
-	  members: this.http.get<DashboardMemberRowApi[]>(`${this.apiUrl}/members`),
+	  reservations: this.http.get<DashboardReservationRowApi[]>(`${this.apiUrl}/reservations`, { params: { period } }),
+	  admins: this.http.get<DashboardMemberRowApi[]>(`${this.apiUrl}/admins`),
 	}).pipe(
-	  map(({ overview, reservations, members }) => ({
-		kpis: this.mapKpis(overview),
-		chartPoints: this.mapChartPoints(reservations),
-		teamMembers: this.mapTeamMembers(members),
-		taskItems: this.mapTaskItems(reservations),
-	  }))
+	  map(({ overview, reservations, admins }) => {
+		const filtered = siteId === 'ALL' ? reservations : reservations.filter(r => r.siteId === siteId);
+		const filteredAdmins = siteId === 'ALL'
+		  ? admins
+		  : admins.filter(a => a.siteId === siteId || a.siteId === null);
+		return {
+		  kpis: this.mapKpis(overview),
+		  chartPoints: this.mapChartPoints(filtered),
+		  teamMembers: this.mapTeamMembers(filteredAdmins),
+		  taskItems: this.mapTaskItems(filtered),
+		};
+	  })
 	);
+  }
+
+  getReservationsPerDay(period: DashboardPeriod = '7d', siteId: number | 'ALL' = 'ALL') {
+    return this.http.get<Record<string, number>>(
+      `${this.apiUrl}/reservations-per-day`,
+      { params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() } }
+    );
   }
 
   private mapKpis(overview: DashboardOverviewApi): KpiItem[] {
@@ -102,5 +113,3 @@ export class DashboardService {
 	return 'low';
   }
 }
-
-
