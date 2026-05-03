@@ -1,5 +1,7 @@
 package be.ephec.padel_backend.config;
 
+import be.ephec.padel_backend.config.DataSource.DataSourceContext;
+import be.ephec.padel_backend.config.DataSource.DataSourceType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +51,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String username = jwtUtil.extractUsername(token);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                // ✅ FIX : définir la datasource AVANT loadUserByUsername
+                // RoutingDataSource a besoin du contexte pour savoir quelle DB interroger
+                String earlyRole = jwtUtil.extractRole(token);
+                if (earlyRole == null || earlyRole.isBlank()) {
+                    earlyRole = RoleExtractor.extractRole(username);
+                }
+                DataSourceContext.set(earlyRole.contains("ADMIN") ? DataSourceType.ADMIN : DataSourceType.USER);
+
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 if (jwtUtil.isTokenValid(token, userDetails)) {
                     String roleAuthority = jwtUtil.extractRole(token);

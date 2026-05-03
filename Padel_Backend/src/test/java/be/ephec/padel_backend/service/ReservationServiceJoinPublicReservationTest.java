@@ -60,7 +60,7 @@ class ReservationServiceJoinPublicReservationTest {
         reservationService.joinPublicReservation(100, "L00002");
 
         assertEquals("OPEN", reservation.getStatut());
-        assertTrue("PUBLIC".equals(reservation.getTypeReservation()));
+        assertEquals("PUBLIC", reservation.getTypeReservation());
         verify(reservationUtilisateurRepository).save(any());
         verify(reservationRepository).save(reservation);
     }

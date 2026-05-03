@@ -10,10 +10,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.server.ResponseStatusException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,7 +47,7 @@ class AdminAccessServiceTest {
 
         assertEquals(7, scope.siteId());
         assertEquals("ROLE_LOCALADMIN", scope.role());
-        assertEquals(false, scope.global());
+        assertFalse(scope.global());
     }
 
     @Test

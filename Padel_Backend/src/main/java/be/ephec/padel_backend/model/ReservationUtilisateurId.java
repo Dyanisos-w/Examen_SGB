@@ -17,8 +17,7 @@ public class ReservationUtilisateurId implements Serializable{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ReservationUtilisateurId)) return false;
-        ReservationUtilisateurId that = (ReservationUtilisateurId) o;
+        if (!(o instanceof ReservationUtilisateurId that)) return false;
         return Objects.equals(reservation, that.reservation) &&
                 Objects.equals(utilisateur, that.utilisateur);
     }

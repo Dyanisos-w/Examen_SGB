@@ -1,5 +1,5 @@
 <div class="flex h-screen bg-gray-900 text-white">
-
+  <!-- menu latéral -->
   <app-shared-sidebar-menu
     [isOpen]="isSidebarOpen"
     mode="admin"
@@ -15,12 +15,17 @@
     </div>
   }
 
-  <div class="flex flex-1 flex-col overflow-hidden">
+  <!-- layout principal -->
+  <div class="flex flex-1 flex-col">
+    <!-- header -->
     <app-admin-topbar
       (menuClick)="toggleSidebar()">
     </app-admin-topbar>
 
-    <app-admin-content [selectedSiteId]="selectedSiteId"></app-admin-content>
+    <!-- contenu scrollable -->
+    <main class="flex-1 overflow-y-auto">
+      <app-admin-content [selectedSiteId]="selectedSiteId"></app-admin-content>
+    </main>
   </div>
 
 </div>

@@ -46,10 +46,10 @@ export class DashboardService {
   }
 
   getReservationsPerDay(period: DashboardPeriod = '7d', siteId: number | 'ALL' = 'ALL') {
-    return this.http.get<Record<string, number>>(
-      `${this.apiUrl}/reservations-per-day`,
-      { params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() } }
-    );
+	return this.http.get<ChartPoint[]>(
+	  `${this.apiUrl}/reservations-per-day`,
+	  { params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() } }
+	);
   }
 
   private mapKpis(overview: DashboardOverviewApi): KpiItem[] {

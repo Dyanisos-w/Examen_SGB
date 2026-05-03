@@ -7,6 +7,8 @@ import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.model.Utilisateur;
 import be.ephec.padel_backend.repository.SiteRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
+import be.ephec.padel_backend.exception.AuthenticationException;
+import be.ephec.padel_backend.exception.ReservationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,11 +34,11 @@ public class AuthService {
     public AuthController.LoginToken login(String matricule, String password) {
         // Charger l'utilisateur depuis la BD
         Utilisateur utilisateur = utilisateurRepository.findByMatricule(matricule)
-                .orElseThrow(() -> new IllegalArgumentException("Utilisateur non trouvé: " + matricule));
+                .orElseThrow(() -> new AuthenticationException("Erreur de connexion : login ou mot de passe incorrect."));
 
         // Vérifier le mot de passe
         if (!passwordEncoder.matches(password, utilisateur.getPassword())) {
-            throw new IllegalArgumentException("Mot de passe incorrect");
+            throw new AuthenticationException("Erreur de connexion : login ou mot de passe incorrect.");
         }
 
         // Extraire le rôle du préfixe matricule
@@ -84,7 +86,7 @@ public class AuthService {
     public String register(AuthController.RegisterRequest request) {
         String role = request.accountType();
         if ("LOCALADMIN".equals(role) || "GLOBALADMIN".equals(role)) {
-            throw new IllegalArgumentException("Le register public ne permet pas de créer des admins");
+            throw new ReservationException("Le register public ne permet pas de créer des admins");
         }
 
         return registerInternal(request);
@@ -93,7 +95,7 @@ public class AuthService {
     public String registerAdmin(AuthController.RegisterRequest request) {
         String role = request.accountType();
         if (!"LOCALADMIN".equals(role) && !"GLOBALADMIN".equals(role)) {
-            throw new IllegalArgumentException("Seuls les comptes admins peuvent être créés via cet endpoint");
+            throw new ReservationException("Seuls les comptes admins peuvent être créés via cet endpoint");
         }
 
         return registerInternal(request);
@@ -113,7 +115,7 @@ public class AuthService {
 
         if ("LOCAL".equals(role) || "LOCALADMIN".equals(role)) {
             Site site = siteRepository.findFirstByNomIgnoreCase(request.ville().trim())
-                    .orElseThrow(() -> new IllegalArgumentException(
+                    .orElseThrow(() -> new ReservationException(
                             "Site introuvable pour la ville : " + request.ville()));
             user.setSiteAssociated(site);
         }
@@ -125,10 +127,10 @@ public class AuthService {
     private void validateRequest(AuthController.RegisterRequest req, String role) {
         if (isBlank(req.nom()) || isBlank(req.prenom())
                 || isBlank(req.password()) || isBlank(role)) {
-            throw new IllegalArgumentException("Tous les champs obligatoires doivent être remplis.");
+            throw new ReservationException("Tous les champs obligatoires doivent être remplis.");
         }
         if (("LOCAL".equals(role) || "LOCALADMIN".equals(role)) && isBlank(req.ville())) {
-            throw new IllegalArgumentException("La ville est requise pour un compte local.");
+            throw new ReservationException("La ville est requise pour un compte local.");
         }
     }
 

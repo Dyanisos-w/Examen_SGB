@@ -70,6 +70,12 @@
           Log in
         </button>
 
+        <!-- Error Message -->
+        <p *ngIf="errorMessage"
+           class="mb-6 rounded-lg border border-red-600 bg-red-900/40 px-3 py-2 text-sm text-red-200">
+          {{ errorMessage }}
+        </p>
+
         <!-- Footer -->
         <p class="text-sm text-gray-400 text-center">
           Don’t have an account?

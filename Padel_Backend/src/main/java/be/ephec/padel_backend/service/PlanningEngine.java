@@ -1,6 +1,7 @@
 package be.ephec.padel_backend.service;
 
 import be.ephec.padel_backend.DTO.PlanningSlotDto;
+import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.model.SiteOpeningHours;
 import be.ephec.padel_backend.model.Terrain;
 import be.ephec.padel_backend.model.Utilisateur;
@@ -8,6 +9,7 @@ import be.ephec.padel_backend.repository.ReservationRepository;
 import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.TerrainRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
+import be.ephec.padel_backend.service.admin.SiteClosureService;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,7 @@ public class PlanningEngine {
     private final UtilisateurRepository utilisateurRepository;
     private final TerrainRepository terrainRepository;
     private final SiteOpeningHoursRepository siteOpeningHoursRepository;
+    private final SiteClosureService siteClosureService;
 
     private static final int GLOBAL_UTILISATEUR_ADVANCE_DAYS = 21;
     private static final int SITE_UTILISATEUR_ADVANCE_DAYS   = 14;
@@ -34,11 +37,13 @@ public class PlanningEngine {
     public PlanningEngine(ReservationRepository reservationRepository,
                           UtilisateurRepository utilisateurRepository,
                           TerrainRepository terrainRepository,
-                          SiteOpeningHoursRepository siteOpeningHoursRepository) {
+                          SiteOpeningHoursRepository siteOpeningHoursRepository,
+                          SiteClosureService siteClosureService) {
         this.reservationRepository = reservationRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.terrainRepository = terrainRepository;
         this.siteOpeningHoursRepository = siteOpeningHoursRepository;
+        this.siteClosureService = siteClosureService;
     }
 
     public List<PlanningSlotDto> generateWeeklyPlanning(String userId, Integer siteId, LocalDate referenceDate) {
@@ -61,7 +66,23 @@ public class PlanningEngine {
 
         List<PlanningSlotDto> planning = new ArrayList<>();
 
+        // Récupérer le site pour la vérification des fermetures
+        Site site = null;
+        if (!terrains.isEmpty() && terrains.get(0).getSite() != null) {
+            site = terrains.get(0).getSite();
+        } else {
+            // fallback si le terrain n'a pas de site (devrait être rare)
+            site = new Site();
+            site.setSiteId(siteId);
+        }
+
         for (LocalDate date : weekDates) {
+
+            // Ajout du contrôle fermeture
+            if (siteClosureService != null && siteClosureService.isSiteClosedOnDate(site, date)) {
+                continue;
+            }
+
             List<LocalTime> slots = generateSlots(openingHoursByDay.get(date.getDayOfWeek()));
 
             for (Terrain terrain : terrains) {
