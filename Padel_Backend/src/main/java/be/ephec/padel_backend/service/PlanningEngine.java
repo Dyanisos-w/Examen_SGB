@@ -1,15 +1,19 @@
 package be.ephec.padel_backend.service;
 
 import be.ephec.padel_backend.DTO.PlanningSlotDto;
+import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.model.SiteOpeningHours;
 import be.ephec.padel_backend.model.Terrain;
 import be.ephec.padel_backend.model.Utilisateur;
 import be.ephec.padel_backend.repository.ReservationRepository;
+import be.ephec.padel_backend.repository.SiteRepository;
 import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.TerrainRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
-import org.springframework.cglib.core.Local;
+import be.ephec.padel_backend.service.admin.SiteClosureService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -22,8 +26,10 @@ public class PlanningEngine {
 
     private final ReservationRepository reservationRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final SiteRepository siteRepository;
     private final TerrainRepository terrainRepository;
     private final SiteOpeningHoursRepository siteOpeningHoursRepository;
+    private final SiteClosureService siteClosureService;
 
     private static final int GLOBAL_UTILISATEUR_ADVANCE_DAYS = 21;
     private static final int SITE_UTILISATEUR_ADVANCE_DAYS   = 14;
@@ -33,18 +39,24 @@ public class PlanningEngine {
 
     public PlanningEngine(ReservationRepository reservationRepository,
                           UtilisateurRepository utilisateurRepository,
+                          SiteRepository siteRepository,
                           TerrainRepository terrainRepository,
-                          SiteOpeningHoursRepository siteOpeningHoursRepository) {
+                          SiteOpeningHoursRepository siteOpeningHoursRepository,
+                          SiteClosureService siteClosureService) {
         this.reservationRepository = reservationRepository;
         this.utilisateurRepository = utilisateurRepository;
+        this.siteRepository = siteRepository;
         this.terrainRepository = terrainRepository;
         this.siteOpeningHoursRepository = siteOpeningHoursRepository;
+        this.siteClosureService = siteClosureService;
     }
 
     public List<PlanningSlotDto> generateWeeklyPlanning(String userId, Integer siteId, LocalDate referenceDate) {
 
         // ── 1 query user ─────────────────────────────────────────────────────
         Utilisateur user = utilisateurRepository.findById(userId).orElseThrow();
+        Site site = siteRepository.findById(siteId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Site non trouve : " + siteId));
         LocalDate today = LocalDate.now();
         LocalDate maxReservableDate = today.plusDays(getAdvanceDays(user));
         LocalDate planningReference = referenceDate != null ? referenceDate : LocalDate.now();
@@ -62,6 +74,11 @@ public class PlanningEngine {
         List<PlanningSlotDto> planning = new ArrayList<>();
 
         for (LocalDate date : weekDates) {
+            if (siteClosureService.isSiteClosedOnDate(site, date)) {
+                // Jour ferme: aucun creneau n'est genere pour cette date.
+                continue;
+            }
+
             List<LocalTime> slots = generateSlots(openingHoursByDay.get(date.getDayOfWeek()));
 
             for (Terrain terrain : terrains) {
