@@ -1,4 +1,4 @@
-<div class="flex h-screen bg-gray-900 text-white">
+<div class="flex min-h-screen bg-gray-900 text-white">
 
   <app-shared-sidebar-menu
     [isOpen]="isSidebarOpen"
@@ -15,7 +15,7 @@
     </div>
   }
 
-  <div class="flex flex-1 flex-col overflow-hidden">
+  <div class="flex min-w-0 flex-1 flex-col">
     <app-admin-topbar
       (menuClick)="toggleSidebar()">
     </app-admin-topbar>

@@ -1,11 +1,11 @@
-<main class="flex-1 p-4 lg:p-6 overflow-y-auto">
+<main class="min-w-0 flex-1 p-4 lg:p-6 overflow-y-auto">
   <div class="mx-auto w-full max-w-2xl rounded-xl border border-white/10 bg-[#111827] p-6 text-white">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 class="text-xl font-semibold">Creer un admin local</h2>
         <p class="text-sm text-slate-300">Creation reservee aux GLOBALADMIN.</p>
       </div>
-      <a routerLink="/admin" class="rounded-md bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Retour dashboard</a>
+      <a routerLink="/admin" class="w-full rounded-md bg-slate-700 px-3 py-2 text-center text-sm hover:bg-slate-600 sm:w-auto">Retour dashboard</a>
     </div>
 
     @if (successMatricule) {

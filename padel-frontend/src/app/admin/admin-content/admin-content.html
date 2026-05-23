@@ -1,4 +1,4 @@
-<main class="flex-1 p-4 lg:p-6 space-y-6 overflow-y-auto"> @if (dashboardData$ | async; as data) {
+<main class="min-w-0 flex-1 p-4 lg:p-6 space-y-6 overflow-y-auto"> @if (dashboardData$ | async; as data) {
   <app-kpi-grid-widget [items]="data.kpis"></app-kpi-grid-widget>
   <app-ui-card title="Weekly activity" subtitle="Simple placeholder chart">
     <div

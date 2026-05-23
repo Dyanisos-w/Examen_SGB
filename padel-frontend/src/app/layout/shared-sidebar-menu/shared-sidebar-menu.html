@@ -1,5 +1,5 @@
 <aside
-  class="fixed left-0 top-0 z-50 flex h-full w-72 max-w-[85vw] -translate-x-full flex-col border-r border-white/10 bg-[#111827] p-6 text-white transition-transform duration-300"
+  class="fixed left-0 top-0 z-50 flex h-full w-72 max-w-[85vw] -translate-x-full flex-col border-r border-white/10 bg-[#111827] p-6 text-white transition-transform duration-300 lg:static lg:z-auto lg:h-auto lg:max-w-none lg:translate-x-0"
   [class.translate-x-0]="isOpen">
 
   <div class="mb-8 flex items-center justify-between gap-3">
@@ -10,7 +10,7 @@
 
     <button
       type="button"
-      class="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
+      class="rounded-md border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white lg:hidden"
       (click)="navigate.emit()">
       ✕
     </button>
