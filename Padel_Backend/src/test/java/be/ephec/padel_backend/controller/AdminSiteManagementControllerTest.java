@@ -55,9 +55,9 @@ class AdminSiteManagementControllerTest {
         var response = controller.createSite(userDetails, request, dto);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(10, response.getBody().getSiteId());
-        assertEquals("Bruxelles", response.getBody().getNom());
-        assertEquals(0, response.getBody().getNombreTerrains());
+        assertEquals(10, response.getBody().siteId());
+        assertEquals("Bruxelles", response.getBody().nom());
+        assertEquals(0, response.getBody().nombreTerrains());
     }
 
     @Test

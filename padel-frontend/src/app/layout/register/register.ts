@@ -85,9 +85,9 @@ export class RegisterComponent {
       ville: accountType === 'LOCAL' ? this.registerForm.value.ville : null
     };
 
-    this.http.post(`${environment.apiBaseUrl}/api/auth/register`, data).subscribe({
-      next: () => {
-        alert('Successfully registered');
+    this.http.post<{ matricule: string }>(`${environment.apiBaseUrl}/api/auth/register`, data).subscribe({
+      next: (response) => {
+        alert(`Inscription réussie !\n\nVotre matricule est : ${response.matricule}\n\nNotez-le bien, il vous sera demandé pour vous connecter.`);
         this.router.navigate(['/login']);
       }
     });

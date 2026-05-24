@@ -86,10 +86,14 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
+        double dette = organisateur.getPenaliteMontant() != null
+                ? organisateur.getPenaliteMontant().doubleValue()
+                : 0.0;
+
         ReservationUtilisateur organisateurLink = new ReservationUtilisateur();
         organisateurLink.setReservation(savedReservation);
         organisateurLink.setUtilisateur(organisateur);
-        organisateurLink.setMontantDu(PLAYER_SHARE);
+        organisateurLink.setMontantDu(PLAYER_SHARE + dette);
         organisateurLink.setMontantPaye(0.0);
         organisateurLink.setStatutPaiement("PENDING");
 
@@ -117,10 +121,14 @@ public class ReservationService {
             throw new RuntimeException("Réservation complète");
         }
 
+        double dette = utilisateur.getPenaliteMontant() != null
+                ? utilisateur.getPenaliteMontant().doubleValue()
+                : 0.0;
+
         ReservationUtilisateur ru = new ReservationUtilisateur();
         ru.setReservation(reservation);
         ru.setUtilisateur(utilisateur);
-        ru.setMontantDu(PLAYER_SHARE);
+        ru.setMontantDu(PLAYER_SHARE + dette);
         ru.setMontantPaye(0.0);
         ru.setStatutPaiement("PENDING");
 
@@ -316,8 +324,8 @@ public class ReservationService {
             }
 
             if ("PUBLIC".equalsIgnoreCase(reservation.getTypeReservation()) && updatedPlayers < MAX_PLAYERS) {
-                double remaining = MATCH_PRICE - (updatedPlayers * PLAYER_SHARE);
-                addDebtToOrganizer(reservation.getCreateur(), remaining);
+                double debt = (MAX_PLAYERS - updatedPlayers) * PLAYER_SHARE;
+                if (debt > 0) addDebtToOrganizer(reservation.getCreateur(), debt);
             }
 
             reservationRepository.save(reservation);
@@ -325,14 +333,14 @@ public class ReservationService {
     }
 
     private void validateOrganizerCanCreate(Utilisateur organisateur, LocalDate date) {
-        if (organisateur.getPenaliteMontant() != null
-                && organisateur.getPenaliteMontant().compareTo(BigDecimal.ZERO) > 0) {
-            throw new RuntimeException("Réservation impossible : solde dû existant");
-        }
-
         if (organisateur.getInterditReservationJusqua() != null
                 && LocalDate.now().isBefore(organisateur.getInterditReservationJusqua())) {
             throw new RuntimeException("Réservation impossible : utilisateur pénalisé");
+        }
+
+        if (organisateur.getPenaliteMontant() != null
+                && organisateur.getPenaliteMontant().compareTo(BigDecimal.ZERO) > 0) {
+            throw new RuntimeException("Réservation impossible : solde impayé en attente");
         }
 
         int advanceDays = getAdvanceDays(organisateur);
@@ -478,6 +486,16 @@ public class ReservationService {
         payment.setStatutPaiement(PaymentStatus.PAYE);
         payment.setDatePaiement(LocalDate.now());
         paymentRepository.save(payment);
+
+        Utilisateur payeur = ru.getUtilisateur();
+        boolean isOrganizer = ru.getReservation().getCreateur() != null
+                && ru.getReservation().getCreateur().getMatricule().equals(payeur.getMatricule());
+
+        if (payeur.getPenaliteMontant() != null
+                && payeur.getPenaliteMontant().compareTo(BigDecimal.ZERO) > 0) {
+            payeur.setPenaliteMontant(BigDecimal.ZERO);
+            utilisateurRepository.save(payeur);
+        }
     }
 
     // ─── DTO projection methods ────────────────────────────────────────────────
