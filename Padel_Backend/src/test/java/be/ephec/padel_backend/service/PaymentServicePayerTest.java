@@ -51,7 +51,7 @@ class PaymentServicePayerTest {
         assertNotNull(returned);
         assertEquals(PaymentStatus.PAYE, returned.getStatutPaiement());
         assertEquals(LocalDate.now(), returned.getDatePaiement());
-        assertTrue(Boolean.TRUE.equals(reservation.getEstMaintenu()));
+        assertEquals(Boolean.TRUE, reservation.getEstMaintenu());
 
         verify(paymentRepository).save(payment);
         verify(reservationRepository).save(reservation);

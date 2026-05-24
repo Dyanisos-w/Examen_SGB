@@ -15,8 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,8 +44,8 @@ class PaymentServicePartialPaymentsTest {
 
         paymentService.payer(11);
 
-        assertFalse(Boolean.TRUE.equals(reservation.getEstMaintenu()));
-        assertTrue(payment.getStatutPaiement() == PaymentStatus.PAYE);
+        assertNotEquals(Boolean.TRUE, reservation.getEstMaintenu());
+        assertSame(payment.getStatutPaiement(), PaymentStatus.PAYE);
         verify(reservationRepository, never()).save(reservation);
     }
 }

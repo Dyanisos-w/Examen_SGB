@@ -16,6 +16,7 @@ import be.ephec.padel_backend.repository.UtilisateurRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import be.ephec.padel_backend.service.admin.SiteClosureService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -39,17 +40,20 @@ public class ReservationService {
     private final UtilisateurRepository utilisateurRepository;
     private final TerrainRepository terrainRepository;
     private final PaymentRepository paymentRepository;
+    private final SiteClosureService siteClosureService;
 
     public ReservationService(ReservationRepository reservationRepository,
                               ReservationUtilisateurRepository reservationUtilisateurRepository,
                               UtilisateurRepository utilisateurRepository,
                               TerrainRepository terrainRepository,
-                              PaymentRepository paymentRepository) {
+                              PaymentRepository paymentRepository,
+                              SiteClosureService siteClosureService) {
         this.reservationRepository = reservationRepository;
         this.reservationUtilisateurRepository = reservationUtilisateurRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.terrainRepository = terrainRepository;
         this.paymentRepository = paymentRepository;
+        this.siteClosureService = siteClosureService;
     }
 
     public Reservation createReservation(String userId,
@@ -58,11 +62,18 @@ public class ReservationService {
                                          LocalTime heureDebut,
                                          String typeReservation) {
 
+
         Utilisateur organisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
         Terrain terrain = terrainRepository.findById(terrainId)
                 .orElseThrow(() -> new RuntimeException("Terrain introuvable"));
+
+
+        // Vérification fermeture (globale ou site)
+        if (siteClosureService.isSiteClosedOnDate(terrain.getSite(), date)) {
+            throw new ReservationClosedDayException("Impossible de réserver : le site est fermé à cette date (fermeture globale ou spécifique)");
+        }
 
         validateOrganizerCanCreate(organisateur, date);
         validateSiteAccess(organisateur, terrain);
@@ -281,43 +292,39 @@ public class ReservationService {
     @Scheduled(cron = "0 0 2 * * *")
     public void checkReservationsDayBefore() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
-
         List<Reservation> reservations = reservationRepository.findByDateReservationAndStatutNot(tomorrow, "CANCELLED");
 
         for (Reservation reservation : reservations) {
-            int nbPlayers = reservationUtilisateurRepository.countByIdReservationId(reservation.getIdReservation());
-
-            if ("PRIVATE".equalsIgnoreCase(reservation.getTypeReservation()) && nbPlayers < MAX_PLAYERS) {
-                reservation.setTypeReservation("PUBLIC");
-                reservation.setStatut("OPEN");
-
-                applyPenaltyToOrganizer(reservation.getCreateur());
-                reservationRepository.save(reservation);
-            }
-
-            List<ReservationUtilisateur> participants =
-                    reservationUtilisateurRepository.findByIdReservationId(reservation.getIdReservation());
-
+            // 1. Supprimer les joueurs non payés (hors organisateur)
+            List<ReservationUtilisateur> participants = reservationUtilisateurRepository.findByIdReservationId(reservation.getIdReservation());
             for (ReservationUtilisateur participant : participants) {
-                if (!hasPaid(participant)) {
-                    boolean isCreator = participant.getUtilisateur().getMatricule()
-                            .equals(reservation.getCreateur().getMatricule());
-
-                    if (!isCreator) {
-                        reservationUtilisateurRepository.delete(participant);
-                    }
+                boolean isCreator = participant.getUtilisateur().getMatricule().equals(reservation.getCreateur().getMatricule());
+                if (!isCreator && !hasPaid(participant)) {
+                    reservationUtilisateurRepository.delete(participant);
                 }
             }
 
-            int updatedPlayers = reservationUtilisateurRepository.countByIdReservationId(reservation.getIdReservation());
+            // 2. Recalculer la liste des participants après suppression
+            List<ReservationUtilisateur> updatedParticipants = reservationUtilisateurRepository.findByIdReservationId(reservation.getIdReservation());
+            int nbPlayers = updatedParticipants.size();
 
-            if (updatedPlayers == 0) {
-                reservation.setStatut("CANCELLED");
+            // 3. Si match privé et incomplet, passer en public
+            if ("PRIVATE".equalsIgnoreCase(reservation.getTypeReservation()) && nbPlayers < MAX_PLAYERS) {
+                reservation.setTypeReservation("PUBLIC");
+                reservation.setStatut("OPEN");
                 reservationRepository.save(reservation);
-                continue;
             }
 
-            if (updatedPlayers >= MAX_PLAYERS) {
+            // 4. Si match public et incomplet, pénaliser l'organisateur
+            if ("PUBLIC".equalsIgnoreCase(reservation.getTypeReservation()) && nbPlayers < MAX_PLAYERS) {
+                applyPenaltyToOrganizer(reservation.getCreateur());
+                double remaining = MATCH_PRICE - (nbPlayers * PLAYER_SHARE);
+                addDebtToOrganizer(reservation.getCreateur(), remaining);
+                reservationRepository.save(reservation);
+            }
+
+            // 5. Statut FULL si complet, sinon OPEN
+            if (nbPlayers >= MAX_PLAYERS) {
                 reservation.setStatut("FULL");
             } else {
                 reservation.setStatut("OPEN");
@@ -554,5 +561,12 @@ public class ReservationService {
         dto.nbJoueurs     = reservationUtilisateurRepository.countByIdReservationId(r.getIdReservation());
         dto.statut        = r.getStatut();
         return dto;
+    }
+
+    // Exception métier explicite pour réservation sur jour fermé
+    public static class ReservationClosedDayException extends RuntimeException {
+        public ReservationClosedDayException(String message) {
+            super(message);
+        }
     }
 }

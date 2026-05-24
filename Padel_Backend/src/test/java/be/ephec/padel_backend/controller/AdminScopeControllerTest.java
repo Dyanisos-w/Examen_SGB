@@ -11,8 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,7 +41,7 @@ class AdminScopeControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("ROLE_GLOBALADMIN", response.getBody().role());
-        assertEquals(true, response.getBody().global());
-        assertEquals(null, response.getBody().siteId());
+        assertTrue(response.getBody().global());
+        assertNull(response.getBody().siteId());
     }
 }

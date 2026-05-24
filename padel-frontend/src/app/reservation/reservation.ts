@@ -8,6 +8,7 @@ import { TerrainSelector } from './terrain-selector/terrain-selector';
 import { WeekNavigator } from './week-navigator/week-navigator';
 import { ReservationService, PlanningSlot } from '../services/reservation.service';
 import { SiteDto, SiteService } from '../services/site.service';
+import {Header} from '../layout/header/header';
 
 @Component({
   selector: 'app-reservation',
@@ -19,7 +20,8 @@ import { SiteDto, SiteService } from '../services/site.service';
     RouterLink,
     CalendarGrid,
     TerrainSelector,
-    WeekNavigator
+    WeekNavigator,
+    Header
   ]
 })
 export class Reservation implements OnInit, OnDestroy {

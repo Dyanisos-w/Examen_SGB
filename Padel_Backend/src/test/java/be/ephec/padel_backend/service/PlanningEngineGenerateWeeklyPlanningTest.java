@@ -14,9 +14,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.quality.Strictness;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -30,6 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class PlanningEngineGenerateWeeklyPlanningTest {
 
     @Mock
@@ -49,28 +54,34 @@ class PlanningEngineGenerateWeeklyPlanningTest {
     private PlanningEngine planningEngine;
 
     @Test
-    void shouldGenerateWeekPlanningWithSlotsForEachTerrain() {
+    void shouldGenerateWeekPlanningWithAllSlotsAvailable_whenNoClosureAndNoReservation() {
+
+        // Arrange
         Utilisateur user = new Utilisateur("G00001", "Global", "User");
 
-        Terrain t1 = new Terrain(1, "T1", null);
-        Terrain t2 = new Terrain(2, "T2", null);
         Site site = new Site();
         site.setSiteId(1);
+
+        Terrain t1 = new Terrain(1, "T1", site);
+        Terrain t2 = new Terrain(2, "T2", site);
         site.setTerrains(List.of(t1, t2));
 
+        LocalDate monday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+
         when(utilisateurRepository.findById("G00001")).thenReturn(Optional.of(user));
-        when(siteRepository.findById(1)).thenReturn(Optional.of(site));
-        when(siteOpeningHoursRepository.findBySiteSiteId(1)).thenReturn(List.of());
         when(terrainRepository.findBySiteSiteId(1)).thenReturn(List.of(t1, t2));
+        when(siteOpeningHoursRepository.findBySiteSiteId(1)).thenReturn(List.of());
         when(reservationRepository.findOccupiedSlotsForWeek(eq(1), any(), any())).thenReturn(List.of());
         when(siteClosureService.isSiteClosedOnDate(eq(site), any())).thenReturn(false);
 
-        List<PlanningSlotDto> planning = planningEngine.generateWeeklyPlanning("G00001", 1, LocalDate.now());
+        // Act
+        List<PlanningSlotDto> planning = planningEngine.generateWeeklyPlanning("G00001", 1, monday);
 
         int expected = 7 * 2 * planningEngine.generateSlots().size();
         assertEquals(expected, planning.size());
         assertTrue(planning.stream().anyMatch(PlanningSlotDto::isDisponible));
         assertFalse(planning.isEmpty());
+        assertTrue(planning.stream().allMatch(PlanningSlotDto::isDisponible));
     }
 
     @Test
@@ -107,3 +118,35 @@ class PlanningEngineGenerateWeeklyPlanningTest {
     }
 }
 
+    @Test
+    void shouldExcludeClosedDayFromPlanning() {
+
+        Utilisateur user = new Utilisateur("G00001", "Global", "User");
+
+        Site site = new Site();
+        site.setSiteId(1);
+
+        Terrain t1 = new Terrain(1, "T1", site);
+        Terrain t2 = new Terrain(2, "T2", site);
+        site.setTerrains(List.of(t1, t2));
+
+        LocalDate monday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        LocalDate closedDay = monday.plusDays(3);
+
+        when(utilisateurRepository.findById("G00001")).thenReturn(Optional.of(user));
+        when(terrainRepository.findBySiteSiteId(1)).thenReturn(List.of(t1, t2));
+        when(siteOpeningHoursRepository.findBySiteSiteId(1)).thenReturn(List.of());
+        when(reservationRepository.findOccupiedSlotsForWeek(eq(1), any(), any())).thenReturn(List.of());
+
+        when(siteClosureService.isSiteClosedOnDate(any(Site.class), any(LocalDate.class)))
+                .thenAnswer(invocation -> closedDay.equals(invocation.getArgument(1)));
+
+        List<PlanningSlotDto> planning = planningEngine.generateWeeklyPlanning("G00001", 1, monday);
+
+        // Vérification métier principale
+        assertTrue(planning.stream().noneMatch(slot -> slot.getDate().equals(closedDay)));
+
+        // Les autres restent disponibles
+        assertTrue(planning.stream().allMatch(PlanningSlotDto::isDisponible));
+    }
+}

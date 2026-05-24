@@ -15,9 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,7 +53,7 @@ class PaymentServicePayerEdgeCasesTest {
         Payment result = paymentService.payer(10);
 
         assertEquals(PaymentStatus.PAYE, result.getStatutPaiement());
-        assertTrue(result.getDatePaiement() != null);
+        assertNotNull(result.getDatePaiement());
         verify(paymentRepository).save(payment);
         verify(reservationRepository, never()).save(reservation);
     }

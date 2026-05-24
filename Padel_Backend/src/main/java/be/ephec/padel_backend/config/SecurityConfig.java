@@ -1,5 +1,6 @@
 package be.ephec.padel_backend.config;
 
+import be.ephec.padel_backend.config.DataSource.DataSourceRoutingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -60,8 +61,8 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, authException) ->
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication required"))
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(new DataSourceRoutingFilter(), JwtAuthenticationFilter.class);
         return http.build();
     }
 

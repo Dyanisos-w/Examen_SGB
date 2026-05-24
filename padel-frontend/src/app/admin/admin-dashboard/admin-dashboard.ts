@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AdminTopbar } from '../admin-topbar/admin-topbar';
 import { AdminContent } from '../admin-content/admin-content';
 import { SharedSidebarMenu } from '../../layout/shared-sidebar-menu/shared-sidebar-menu';
+import { AdminSiteContextService } from '../services/admin-site-context.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -14,9 +15,15 @@ import { SharedSidebarMenu } from '../../layout/shared-sidebar-menu/shared-sideb
 })
 export class AdminDashboard {
   isSidebarOpen = false;
-  selectedSiteId: number | 'ALL' = 'ALL';
 
-  constructor(private router: Router) {}
+  private readonly siteContext = inject(AdminSiteContextService);
+  private readonly router = inject(Router);
+
+  // Lire le site actif depuis le service partagé
+  get selectedSiteId(): number | 'ALL' {
+    const id = this.siteContext.selectedSiteId;
+    return id === null ? 'ALL' : id;
+  }
 
   toggleSidebar(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
@@ -26,8 +33,10 @@ export class AdminDashboard {
     this.isSidebarOpen = false;
   }
 
-  onSiteChange(id: number | 'ALL'): void {
-    this.selectedSiteId = id;
+  /** Le menu émet encore cet événement pour rétrocompatibilité, le service est déjà mis à jour. */
+  onSiteChange(_id: number | 'ALL'): void {
+    // Pas besoin de faire quoi que ce soit ici,
+    // AdminSiteContextService est déjà la source unique.
   }
 
   logout(): void {

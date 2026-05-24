@@ -73,6 +73,16 @@ public class PlanningEngine {
 
         List<PlanningSlotDto> planning = new ArrayList<>();
 
+        // Récupérer le site pour la vérification des fermetures
+        Site site = null;
+        if (!terrains.isEmpty() && terrains.get(0).getSite() != null) {
+            site = terrains.get(0).getSite();
+        } else {
+            // fallback si le terrain n'a pas de site (devrait être rare)
+            site = new Site();
+            site.setSiteId(siteId);
+        }
+
         for (LocalDate date : weekDates) {
             if (siteClosureService.isSiteClosedOnDate(site, date)) {
                 // Jour ferme: aucun creneau n'est genere pour cette date.

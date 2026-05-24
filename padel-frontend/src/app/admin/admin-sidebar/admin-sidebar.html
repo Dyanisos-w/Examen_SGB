@@ -38,6 +38,14 @@
       Create terrain
     </a>
 
+    <a
+      class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"
+      routerLink="/admin/closures/new"
+      routerLinkActive="bg-white/10 text-white"
+      (click)="navigate.emit()">
+      Create closure
+    </a>
+
     @if (isGlobalAdmin) {
       <a
         class="block rounded-md px-3 py-2 hover:bg-white/10 hover:text-white"

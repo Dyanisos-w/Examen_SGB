@@ -1,4 +1,7 @@
 package be.ephec.padel_backend.exception;
 
-public record GenericError(int code, String message) {
+
+import java.time.LocalDateTime;
+
+public record GenericError(int code, String error, String message, LocalDateTime timestamp) {
 }

@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-login',
@@ -10,13 +11,23 @@ import { environment } from '../../../environments/environment';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    NgIf
   ]
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+  errorMessage: string | null = null;
+
+  constructor() {
+    this.loginForm.valueChanges.subscribe(() => {
+      this.errorMessage = null;
+    });
+  }
+
   private readRoleFromToken(token: string): string | null {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -27,11 +38,15 @@ export class LoginComponent {
   }
 
   loginForm = this.fb.group({
-    matricule: ['', [Validators.required, Validators.pattern(/^(L|G|S|GA|LA)\d{5}$/)]],
+    matricule: ['', [
+      Validators.required,
+      Validators.pattern(/^(?![;\-]).+/)
+    ]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   onSubmit(): void {
+    this.errorMessage = null;
     if (this.loginForm.invalid) return;
     console.log(this.loginForm.value);
 
@@ -51,7 +66,8 @@ export class LoginComponent {
       },
       error:(error) => {
         console.log("login failed with error: ", error);
-        alert("Login failed: " + (error.error?.message || error.statusText || 'Unkwown user'));
+        this.errorMessage = error.error?.message || error.message || 'Erreur inconnue';
+        this.cdr.detectChanges();
       }
     })
   }

@@ -39,6 +39,8 @@ class ReservationServiceCreateReservationTest {
     private UtilisateurRepository utilisateurRepository;
     @Mock
     private TerrainRepository terrainRepository;
+    @Mock
+    private be.ephec.padel_backend.service.admin.SiteClosureService siteClosureService;
 
     @InjectMocks
     private ReservationService reservationService;
@@ -57,6 +59,7 @@ class ReservationServiceCreateReservationTest {
         when(terrainRepository.findById(1)).thenReturn(Optional.of(terrain));
         when(reservationRepository.findAll()).thenReturn(List.of());
         when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(siteClosureService.isSiteClosedOnDate(site, date)).thenReturn(false);
 
         Reservation created = reservationService.createReservation(
                 "L00001", 1, 1, date, heureDebut, "PUBLIC"
@@ -92,6 +95,7 @@ class ReservationServiceCreateReservationTest {
         when(utilisateurRepository.findById("L00002")).thenReturn(Optional.of(organisateur));
         when(terrainRepository.findById(1)).thenReturn(Optional.of(terrain));
         when(reservationRepository.findAll()).thenReturn(List.of(existing));
+        when(siteClosureService.isSiteClosedOnDate(site, date)).thenReturn(false);
 
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> reservationService.createReservation("L00002", 1, 1, date, heureDebut, "PUBLIC")
@@ -101,4 +105,3 @@ class ReservationServiceCreateReservationTest {
         verify(reservationRepository, never()).save(any(Reservation.class));
     }
 }
-
