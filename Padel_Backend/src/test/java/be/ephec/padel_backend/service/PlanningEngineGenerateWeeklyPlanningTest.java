@@ -7,7 +7,7 @@ import be.ephec.padel_backend.model.Utilisateur;
 import be.ephec.padel_backend.repository.ReservationRepository;
 import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.SiteRepository;
- import be.ephec.padel_backend.repository.TerrainRepository;
+import be.ephec.padel_backend.repository.TerrainRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
 import be.ephec.padel_backend.service.admin.SiteClosureService;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.quality.Strictness;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalAdjuster;
@@ -28,6 +28,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -71,15 +72,51 @@ class PlanningEngineGenerateWeeklyPlanningTest {
         when(terrainRepository.findBySiteSiteId(1)).thenReturn(List.of(t1, t2));
         when(siteOpeningHoursRepository.findBySiteSiteId(1)).thenReturn(List.of());
         when(reservationRepository.findOccupiedSlotsForWeek(eq(1), any(), any())).thenReturn(List.of());
-        when(siteClosureService.isSiteClosedOnDate(any(Site.class), any(LocalDate.class))).thenReturn(false);
+        when(siteClosureService.isSiteClosedOnDate(eq(site), any())).thenReturn(false);
 
         // Act
         List<PlanningSlotDto> planning = planningEngine.generateWeeklyPlanning("G00001", 1, monday);
 
-        // Assert
+        int expected = 7 * 2 * planningEngine.generateSlots().size();
+        assertEquals(expected, planning.size());
+        assertTrue(planning.stream().anyMatch(PlanningSlotDto::isDisponible));
         assertFalse(planning.isEmpty());
         assertTrue(planning.stream().allMatch(PlanningSlotDto::isDisponible));
     }
+
+    @Test
+    void shouldReturnNoSlotsWhenSiteIsClosedAllWeek() {
+        Utilisateur user = new Utilisateur("G00001", "Global", "User");
+        Terrain t1 = new Terrain(1, "T1", null);
+        Site site = new Site();
+        site.setSiteId(1);
+
+        when(utilisateurRepository.findById("G00001")).thenReturn(Optional.of(user));
+        when(siteRepository.findById(1)).thenReturn(Optional.of(site));
+        when(siteOpeningHoursRepository.findBySiteSiteId(1)).thenReturn(List.of());
+        when(terrainRepository.findBySiteSiteId(1)).thenReturn(List.of(t1));
+        when(reservationRepository.findOccupiedSlotsForWeek(eq(1), any(), any())).thenReturn(List.of());
+        when(siteClosureService.isSiteClosedOnDate(eq(site), any())).thenReturn(true);
+
+        List<PlanningSlotDto> planning = planningEngine.generateWeeklyPlanning("G00001", 1, LocalDate.now());
+
+        assertTrue(planning.isEmpty());
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenSiteDoesNotExist() {
+        Utilisateur user = new Utilisateur("G00001", "Global", "User");
+        when(utilisateurRepository.findById("G00001")).thenReturn(Optional.of(user));
+        when(siteRepository.findById(999)).thenReturn(Optional.empty());
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> planningEngine.generateWeeklyPlanning("G00001", 999, LocalDate.now())
+        );
+
+        assertEquals(404, ex.getStatusCode().value());
+    }
+}
 
     @Test
     void shouldExcludeClosedDayFromPlanning() {

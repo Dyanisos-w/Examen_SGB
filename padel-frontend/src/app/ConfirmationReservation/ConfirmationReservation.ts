@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom, forkJoin } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { CreateReservationRequest, ReservationService } from '../services/reservation.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-confirmation-reservation',
@@ -26,13 +28,15 @@ export class ConfirmationReservation implements OnInit {
   matricule3: string = '';
 
   montant = 15;
+  dette = 0;
   isSubmitting = false;
   errorMessage = '';
   successMessage = '';
 
   constructor(
     private router: Router,
-    private reservationService: ReservationService
+    private reservationService: ReservationService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -56,6 +60,26 @@ export class ConfirmationReservation implements OnInit {
     this.heureFin = state.heureFin ?? this.heureDebut;
     this.reservationDate = state.date;
 
+    const matricule = this.getMatriculeFromToken();
+    if (matricule) {
+      this.http.get<{ penaliteMontant?: number }>(`${environment.apiBaseUrl}/utilisateurs/${matricule}`)
+        .subscribe({
+          next: (user) => {
+            this.dette = user.penaliteMontant ?? 0;
+            this.montant = 15 + this.dette;
+          }
+        });
+    }
+  }
+
+  private getMatriculeFromToken(): string | null {
+    const token = sessionStorage.getItem('access_token');
+    if (!token) return null;
+    try {
+      return JSON.parse(atob(token.split('.')[1]))?.sub ?? null;
+    } catch {
+      return null;
+    }
   }
 
   async confirmer() {

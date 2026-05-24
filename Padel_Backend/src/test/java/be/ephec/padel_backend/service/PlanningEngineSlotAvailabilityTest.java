@@ -1,8 +1,11 @@
 package be.ephec.padel_backend.service;
 
 import be.ephec.padel_backend.repository.ReservationRepository;
+import be.ephec.padel_backend.repository.SiteOpeningHoursRepository;
 import be.ephec.padel_backend.repository.SiteRepository;
+import be.ephec.padel_backend.repository.TerrainRepository;
 import be.ephec.padel_backend.repository.UtilisateurRepository;
+import be.ephec.padel_backend.service.admin.SiteClosureService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,6 +28,12 @@ class PlanningEngineSlotAvailabilityTest {
     private UtilisateurRepository utilisateurRepository;
     @Mock
     private SiteRepository siteRepository;
+    @Mock
+    private TerrainRepository terrainRepository;
+    @Mock
+    private SiteOpeningHoursRepository siteOpeningHoursRepository;
+    @Mock
+    private SiteClosureService siteClosureService;
 
     @InjectMocks
     private PlanningEngine planningEngine;

@@ -1,4 +1,11 @@
 spring:
+  datasource:
+    url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
+    jdbc-url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:Padel!123}
+    driver-class-name: ${DB_DRIVER:com.microsoft.sqlserver.jdbc.SQLServerDriver}
+
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
@@ -7,6 +14,22 @@ spring:
       hibernate:
         dialect: ${JPA_DIALECT:org.hibernate.dialect.SQLServerDialect}
 
+app:
+  datasource:
+    user:
+      url: ${USER_DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
+      jdbc-url: ${USER_DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
+      username: ${USER_DB_USERNAME:Utilisateur_Padel}
+      password: ${USER_DB_PASSWORD:Utilisateur@Padel1}
+      driver-class-name: ${USER_DB_DRIVER:com.microsoft.sqlserver.jdbc.SQLServerDriver}
+
+    admin:
+      url: ${ADMIN_DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
+      jdbc-url: ${ADMIN_DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
+      username: ${ADMIN_DB_USERNAME:Admin_Padel}
+      password: ${ADMIN_DB_PASSWORD:Administrateur@Padel1}
+      driver-class-name: ${ADMIN_DB_DRIVER:com.microsoft.sqlserver.jdbc.SQLServerDriver}
+
 server:
   port: ${SERVER_PORT:8080}
 
@@ -14,17 +37,3 @@ jwt:
   secret: ${JWT_SECRET:my-super-secret-key-which-is-very-long-123456}
   expiration: ${JWT_EXPIRATION:3600000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:86400000}
-
-app:
-  datasource:
-    user:
-      jdbc-url: jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
-      username: Utilisateur_Padel
-      password: Utilisateur@Padel1
-      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-
-    admin:
-      jdbc-url: jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
-      username: Admin_Padel
-      password: Administrateur@Padel1
-      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver

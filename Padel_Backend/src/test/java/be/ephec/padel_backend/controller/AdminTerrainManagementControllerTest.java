@@ -70,8 +70,8 @@ class AdminTerrainManagementControllerTest {
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("Terrain 3", response.getBody().getNom());
-        assertEquals(10, response.getBody().getSite().getSiteId());
+        assertEquals("Terrain 3", response.getBody().nom());
+        assertEquals(10, response.getBody().site().siteId());
         assertEquals(3, site.getNombreTerrains());
     }
 
@@ -103,7 +103,7 @@ class AdminTerrainManagementControllerTest {
         );
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals("Terrain B", response.getBody().getNom());
+        assertEquals("Terrain B", response.getBody().nom());
         assertEquals(2, site.getNombreTerrains());
     }
 

@@ -1,6 +1,7 @@
 package be.ephec.padel_backend.controller;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import be.ephec.padel_backend.DTO.admin.SiteAdminResponseDto;
 import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.repository.SiteRepository;
 import be.ephec.padel_backend.service.admin.AdminAccessService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.HtmlUtils;
 
 @RestController
 @RequestMapping("/api/admin/sites")
@@ -25,7 +27,7 @@ public class AdminSiteManagementController {
     private final SiteRepository siteRepository;
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Site> createSite(
+    public ResponseEntity<SiteAdminResponseDto> createSite(
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request,
             @RequestBody CreateSiteRequest createSiteRequest) {
@@ -40,13 +42,13 @@ public class AdminSiteManagementController {
         }
 
         Site site = new Site();
-        site.setNom(createSiteRequest.nom().trim());
-        site.setAdresse(createSiteRequest.adresse().trim());
-        // Option C: la creation des terrains est un flux separe (/api/admin/terrains)
+        site.setNom(HtmlUtils.htmlEscape(createSiteRequest.nom().trim()));
+        site.setAdresse(HtmlUtils.htmlEscape(createSiteRequest.adresse().trim()));
         site.setNombreTerrains(0);
 
         Site saved = siteRepository.save(site);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new SiteAdminResponseDto(saved.getSiteId(), saved.getNom(), saved.getAdresse(), saved.getNombreTerrains()));
     }
 
     private boolean isBlank(String value) {

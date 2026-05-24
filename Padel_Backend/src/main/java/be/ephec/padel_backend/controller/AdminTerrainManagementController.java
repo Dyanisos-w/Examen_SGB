@@ -1,5 +1,6 @@
 package be.ephec.padel_backend.controller;
 
+import be.ephec.padel_backend.DTO.admin.TerrainAdminResponseDto;
 import be.ephec.padel_backend.model.Site;
 import be.ephec.padel_backend.model.Terrain;
 import be.ephec.padel_backend.repository.SiteRepository;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.HtmlUtils;
 
 @RestController
 @RequestMapping("/api/admin/terrains")
@@ -30,7 +32,7 @@ public class AdminTerrainManagementController {
     private final SiteRepository siteRepository;
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Terrain> createTerrain(
+    public ResponseEntity<TerrainAdminResponseDto> createTerrain(
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request,
             @RequestBody CreateTerrainRequest createTerrainRequest) {
@@ -45,7 +47,7 @@ public class AdminTerrainManagementController {
         Site site = siteRepository.findById(effectiveSiteId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Site introuvable"));
 
-        String terrainName = createTerrainRequest.nom().trim();
+        String terrainName = HtmlUtils.htmlEscape(createTerrainRequest.nom().trim());
         if (terrainRepository.existsBySiteSiteIdAndNomIgnoreCase(effectiveSiteId, terrainName)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Un terrain avec ce nom existe deja sur ce site");
         }
@@ -58,7 +60,12 @@ public class AdminTerrainManagementController {
         site.setNombreTerrains(site.getNombreTerrains() + 1);
         siteRepository.save(site);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new TerrainAdminResponseDto(
+                        saved.getTerrainId(),
+                        saved.getNom(),
+                        new TerrainAdminResponseDto.SiteInfo(site.getSiteId(), site.getNom())
+                ));
     }
 
     @DeleteMapping(path = "/{terrainId}")
