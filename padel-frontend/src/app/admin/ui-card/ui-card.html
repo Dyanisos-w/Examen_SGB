@@ -1,26 +1,45 @@
 <article class="rounded-2xl border border-white/10 bg-white/5 p-4 lg:p-6 shadow-sm">
   @if (title || subtitle) {
-    <header class="mb-4 flex items-start justify-between gap-3">
+    <header class="flex items-start justify-between gap-3" [class.mb-4]="!collapsed">
       <div>
         @if (title) {
           <h3 class="text-base font-semibold text-white">{{ title }}</h3>
         }
-        @if (subtitle) {
+        @if (subtitle && !collapsed) {
           <p class="mt-1 text-sm text-gray-400">{{ subtitle }}</p>
         }
       </div>
 
-      <div class="shrink-0">
+      <div class="flex shrink-0 items-center gap-2">
         <ng-content select="[card-actions]"></ng-content>
+        @if (collapsible) {
+          <button
+            (click)="toggle()"
+            class="rounded-lg p-1 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            [attr.aria-label]="collapsed ? 'Développer' : 'Réduire'">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 transition-transform duration-200"
+              [class.rotate-180]="collapsed"
+              viewBox="0 0 20 20"
+              fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clip-rule="evenodd"/>
+            </svg>
+          </button>
+        }
       </div>
     </header>
   }
 
-  <div class="space-y-3">
-    <ng-content></ng-content>
-  </div>
+  @if (!collapsed) {
+    <div class="space-y-3">
+      <ng-content></ng-content>
+    </div>
 
-  <footer class="mt-4">
-    <ng-content select="[card-footer]"></ng-content>
-  </footer>
+    <footer class="mt-4">
+      <ng-content select="[card-footer]"></ng-content>
+    </footer>
+  }
 </article>
