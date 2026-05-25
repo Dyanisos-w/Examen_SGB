@@ -1,0 +1,33 @@
+<div [class]="inline
+       ? 'w-full flex flex-col gap-2 mb-4'
+       : 'fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none'"
+     [style]="inline ? '' : 'width:20rem;max-width:calc(100vw - 2rem)'">
+  @for (toast of toasts; track toast.id) {
+    <div [ngClass]="classes(toast.type)"
+         class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 text-sm shadow-xl">
+      @if (toast.type === 'success') {
+        <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      }
+      @if (toast.type === 'error') {
+        <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      }
+      @if (toast.type === 'info') {
+        <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      }
+      <span class="flex-1">{{ toast.message }}</span>
+      <button (click)="dismiss(toast.id)"
+              class="ml-1 shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+              type="button">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  }
+</div>
