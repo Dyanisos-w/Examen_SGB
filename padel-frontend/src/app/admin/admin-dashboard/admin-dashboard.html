@@ -15,12 +15,12 @@
     </div>
   }
 
-  <div class="flex flex-1 flex-col overflow-hidden">
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
     <app-admin-topbar
       (menuClick)="toggleSidebar()">
     </app-admin-topbar>
 
-    <app-admin-content [selectedSiteId]="selectedSiteId"></app-admin-content>
+    <app-admin-content class="min-h-0 flex-1" [selectedSiteId]="selectedSiteId"></app-admin-content>
   </div>
 
 </div>

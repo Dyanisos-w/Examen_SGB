@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AdminTerrainManagementService } from '../services/admin-terrain-management.service';
 import { SiteDto, SiteService } from '../../services/site.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-admin-create-terrain',
@@ -16,10 +17,9 @@ export class AdminCreateTerrainComponent {
   private readonly fb = inject(FormBuilder);
   private readonly adminTerrainManagementService = inject(AdminTerrainManagementService);
   private readonly siteService = inject(SiteService);
+  private readonly notification = inject(NotificationService);
 
   isLoading = false;
-  successMessage: string | null = null;
-  errorMessage: string | null = null;
   sites: SiteDto[] = [];
   isGlobalAdmin = false;
   adminSiteId: number | null = null;
@@ -54,15 +54,12 @@ export class AdminCreateTerrainComponent {
         }
       },
       error: () => {
-        this.errorMessage = 'Impossible de charger les sites.';
+        this.notification.error('Impossible de charger les sites.');
       }
     });
   }
 
   onSubmit(): void {
-    this.successMessage = null;
-    this.errorMessage = null;
-
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -77,30 +74,28 @@ export class AdminCreateTerrainComponent {
       siteId: effectiveSiteId
     }).subscribe({
       next: (created) => {
-        this.successMessage = `Terrain cree: ${created.nom} (id: ${created.terrainId})`;
+        this.notification.success(`Terrain créé : ${created.nom} (id: ${created.terrainId})`);
         this.form.reset({ nom: '', siteId: this.isGlobalAdmin ? '' : String(this.adminSiteId ?? '') });
         this.isLoading = false;
       },
       error: (error) => {
         this.isLoading = false;
         if (error.status === 403) {
-          this.errorMessage = 'Acces refuse pour ce site.';
+          this.notification.error('Accès refusé pour ce site.');
           return;
         }
         if (error.status === 400) {
-          this.errorMessage = error.error?.message || 'Donnees invalides. Verifie les champs saisis.';
+          this.notification.error(error.error?.message || 'Données invalides. Vérifiez les champs saisis.');
           return;
         }
-        this.errorMessage = 'Erreur serveur. Reessaie plus tard.';
+        this.notification.error('Erreur serveur. Réessayez plus tard.');
       }
     });
   }
 
   private readAuthFromToken(): { role: string | null; siteId: number | null } {
     const token = sessionStorage.getItem('access_token');
-    if (!token) {
-      return { role: null, siteId: null };
-    }
+    if (!token) return { role: null, siteId: null };
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -113,4 +108,3 @@ export class AdminCreateTerrainComponent {
     }
   }
 }
-

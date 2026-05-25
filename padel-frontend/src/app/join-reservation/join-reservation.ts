@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Reservations } from '../Service/reservations';
@@ -6,6 +6,7 @@ import { PublicReservation } from '../Interface/my-reservation';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-join-reservation',
@@ -14,6 +15,8 @@ import { takeUntil } from 'rxjs/operators';
   templateUrl: './join-reservation.html',
 })
 export class JoinReservationComponent implements OnInit, OnDestroy {
+  private notification = inject(NotificationService);
+
   reservations: PublicReservation[] = [];
   loading = true;
   joiningId: number | null = null;
@@ -25,7 +28,6 @@ export class JoinReservationComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log('[JoinReservation] ngOnInit → load()');
     this.load();
   }
 
@@ -36,23 +38,16 @@ export class JoinReservationComponent implements OnInit, OnDestroy {
 
   load(): void {
     this.loading = true;
-    console.log('[JoinReservation] load() → GET /api/reservations/public');
     this.service.getPublicReservations()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          console.log('[JoinReservation] GET /api/reservations/public OK', { count: data.length, data });
           this.reservations = data;
           this.loading = false;
           this.cdr.detectChanges();
         },
         error: (err: HttpErrorResponse) => {
-          console.error('[JoinReservation] GET /api/reservations/public ERR', {
-            status: err.status,
-            url: err.url,
-            message: err.message,
-            body: err.error
-          });
+          console.error('[JoinReservation] GET /api/reservations/public ERR', err);
           this.loading = false;
           this.cdr.detectChanges();
         }
@@ -60,26 +55,21 @@ export class JoinReservationComponent implements OnInit, OnDestroy {
   }
 
   join(id: number): void {
-    console.log('[JoinReservation] join()', { reservationId: id });
     this.joiningId = id;
     this.cdr.detectChanges();
     this.service.joinReservation(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          console.log('[JoinReservation] join() OK', { reservationId: id });
+          this.notification.success('Vous avez rejoint la réservation.');
           this.joiningId = null;
           this.load();
         },
         error: (err: HttpErrorResponse) => {
-          console.error('[JoinReservation] join() ERR', {
-            reservationId: id,
-            status: err.status,
-            body: err.error
-          });
+          console.error('[JoinReservation] join() ERR', err);
+          this.notification.error(err.error?.message || 'Impossible de rejoindre cette réservation.');
           this.joiningId = null;
           this.cdr.detectChanges();
-          alert(err.error?.message || 'Impossible de rejoindre cette réservation.');
         }
       });
   }
@@ -88,4 +78,3 @@ export class JoinReservationComponent implements OnInit, OnDestroy {
 
   trackById(_: number, r: PublicReservation): number { return r.reservationId; }
 }
-

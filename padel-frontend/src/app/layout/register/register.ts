@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { SiteDto, SiteService } from '../../services/site.service';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-register',
@@ -23,6 +24,7 @@ export class RegisterComponent {
   private http = inject(HttpClient);
   private router = inject(Router);
   private siteService = inject(SiteService);
+  private notification = inject(NotificationService);
 
   sites: SiteDto[] = [];
   siteLoadError: string | null = null;
@@ -72,7 +74,7 @@ export class RegisterComponent {
     if (this.registerForm.invalid) return;
 
     if (this.registerForm.value.password !== this.registerForm.value.confirmPassword) {
-      alert("Passwords don't match");
+      this.notification.error('Les mots de passe ne correspondent pas.');
       return;
     }
 
@@ -87,7 +89,10 @@ export class RegisterComponent {
 
     this.http.post<{ matricule: string }>(`${environment.apiBaseUrl}/api/auth/register`, data).subscribe({
       next: (response) => {
-        alert(`Inscription réussie !\n\nVotre matricule est : ${response.matricule}\n\nNotez-le bien, il vous sera demandé pour vous connecter.`);
+        this.notification.success(
+          `Inscription réussie ! Votre matricule : ${response.matricule} — Notez-le bien, il vous sera demandé pour vous connecter.`,
+          0
+        );
         this.router.navigate(['/login']);
       }
     });

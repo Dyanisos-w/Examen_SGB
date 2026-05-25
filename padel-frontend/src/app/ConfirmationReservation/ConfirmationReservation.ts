@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { firstValueFrom, forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { CreateReservationRequest, ReservationService } from '../services/reservation.service';
 import { environment } from '../../environments/environment';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-confirmation-reservation',
@@ -14,6 +15,7 @@ import { environment } from '../../environments/environment';
   templateUrl: './ConfirmationReservation.html'
 })
 export class ConfirmationReservation implements OnInit {
+  private notification = inject(NotificationService);
 
   siteId = 0;
   terrainId = 0;
@@ -30,8 +32,6 @@ export class ConfirmationReservation implements OnInit {
   montant = 15;
   dette = 0;
   isSubmitting = false;
-  errorMessage = '';
-  successMessage = '';
 
   constructor(
     private router: Router,
@@ -83,22 +83,19 @@ export class ConfirmationReservation implements OnInit {
   }
 
   async confirmer() {
-    this.errorMessage = '';
-    this.successMessage = '';
-
     const invites = [this.matricule1, this.matricule2, this.matricule3]
       .map((value) => value.trim().toUpperCase())
       .filter((value) => value !== '');
 
     if (this.typeReservation === 'PRIVATE') {
       if (invites.length !== 3) {
-        this.errorMessage = 'Une reservation privee necessite exactement 3 invites.';
+        this.notification.error('Une reservation privee necessite exactement 3 invites.');
         return;
       }
 
       const unique = new Set(invites);
       if (unique.size !== 3) {
-        this.errorMessage = 'Les invites doivent etre uniques.';
+        this.notification.error('Les invites doivent etre uniques.');
         return;
       }
 
@@ -113,11 +110,11 @@ export class ConfirmationReservation implements OnInit {
 
         const invalidMatricules = invites.filter((_, i) => !checkResults[i]);
         if (invalidMatricules.length > 0) {
-          this.errorMessage = `Matricule(s) introuvable(s): ${invalidMatricules.join(', ')}`;
+          this.notification.error(`Matricule(s) introuvable(s) : ${invalidMatricules.join(', ')}`);
           return;
         }
       } catch {
-        this.errorMessage = 'Erreur lors de la verification des invites. Reessayez.';
+        this.notification.error('Erreur lors de la verification des invites. Reessayez.');
         return;
       } finally {
         this.isSubmitting = false;
@@ -160,9 +157,9 @@ export class ConfirmationReservation implements OnInit {
         } catch {
           // Best effort rollback to avoid leaving an incomplete private reservation.
         }
-        this.errorMessage = 'Erreur lors de l\'ajout des invites. La reservation privee a ete annulee.';
+        this.notification.error('Erreur lors de l\'ajout des invites. La reservation privee a ete annulee.');
       } else {
-        this.errorMessage = 'La reservation a echoue. Verifiez les donnees et reessayez.';
+        this.notification.error('La reservation a echoue. Verifiez les donnees et reessayez.');
       }
     } finally {
       this.isSubmitting = false;

@@ -8,18 +8,6 @@
       <a routerLink="/admin" class="rounded-md bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Retour dashboard</a>
     </div>
 
-    @if (successMessage) {
-      <div class="mb-4 rounded-lg border border-emerald-600/40 bg-emerald-700/20 p-3 text-emerald-200">
-        {{ successMessage }}
-      </div>
-    }
-
-    @if (errorMessage) {
-      <div class="mb-4 rounded-lg border border-red-600/40 bg-red-700/20 p-3 text-red-200">
-        {{ errorMessage }}
-      </div>
-    }
-
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
       <div>
         <label class="mb-2 block text-sm text-slate-300">Nom du terrain</label>
