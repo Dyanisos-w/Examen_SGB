@@ -48,8 +48,8 @@ export class LoginComponent {
         const isAdmin = role === 'ROLE_GLOBALADMIN' || role === 'ROLE_LOCALADMIN';
         this.router.navigate([isAdmin ? '/admin' : '/home']);
       },
-      error: (error) => {
-        this.notification.error('Login incorrect : ' + (error.error?.message || error.statusText || 'Identifiants invalides'));
+      error: () => {
+        this.notification.error('Login incorrect ');
       }
     });
   }
