@@ -25,6 +25,8 @@
         Sign in to your account
       </h1>
 
+      <app-toast [inline]="true"></app-toast>
+
       <form
         [formGroup]="loginForm"
         (ngSubmit)="onSubmit()"
