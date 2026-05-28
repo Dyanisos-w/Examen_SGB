@@ -20,7 +20,7 @@ class JwtUtilTest {
 
         UserDetails user = User.withUsername("L00001")
                 .password("x")
-                .roles("LOCALUSER")
+                .roles("FREEUSER")
                 .build();
 
         String access = jwtUtil.generateToken(user);

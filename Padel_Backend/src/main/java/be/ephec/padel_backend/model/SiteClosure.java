@@ -1,10 +1,16 @@
 package be.ephec.padel_backend.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDate;
 
+@Getter
+@Setter
 @Entity
-@Table(name = "site_closures")
+@Table(name = "site_closures", uniqueConstraints = {
+    @UniqueConstraint(name = "uq_site_closure", columnNames = {"site_id", "date_debut", "date_fin"})
+})
 public class SiteClosure {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,7 +18,7 @@ public class SiteClosure {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id")
-    private Site site; // null = fermeture globale
+    private Site site;
 
     @Column(name = "date_debut", nullable = false)
     private LocalDate dateDebut;
@@ -23,20 +29,9 @@ public class SiteClosure {
     @Column(name = "motif")
     private String motif;
 
-    // Getters et setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // true = créée via "appliquer à tous les sites"
+    @Column(name = "is_global", nullable = false, columnDefinition = "BIT DEFAULT 0")
+    private boolean global = false;
 
-    public Site getSite() { return site; }
-    public void setSite(Site site) { this.site = site; }
-
-    public LocalDate getDateDebut() { return dateDebut; }
-    public void setDateDebut(LocalDate dateDebut) { this.dateDebut = dateDebut; }
-
-    public LocalDate getDateFin() { return dateFin; }
-    public void setDateFin(LocalDate dateFin) { this.dateFin = dateFin; }
-
-    public String getMotif() { return motif; }
-    public void setMotif(String motif) { this.motif = motif; }
 }
 

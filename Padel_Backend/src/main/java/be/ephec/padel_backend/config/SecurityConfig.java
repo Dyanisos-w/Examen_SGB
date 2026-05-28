@@ -1,5 +1,6 @@
 package be.ephec.padel_backend.config;
 
+import be.ephec.padel_backend.config.DataSource.DataSourceRoutingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -49,10 +50,11 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/sites", "/sites/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/terrains", "/terrains/**").permitAll()
-                .requestMatchers("/api/planning/**").hasAnyRole("GLOBALUSER", "LOCALUSER", "FREEUSER")
-                .requestMatchers("/api/ConfirmationsReservation").hasAnyRole("GLOBALUSER", "LOCALUSER", "FREEUSER")
-                .requestMatchers("/api/reservations/**").hasAnyRole("GLOBALUSER", "LOCALUSER", "FREEUSER")
+                .requestMatchers("/api/planning/**").hasAnyRole("GLOBALUSER", "FREEUSER", "SITEUSER")
+                .requestMatchers("/api/ConfirmationsReservation").hasAnyRole("GLOBALUSER", "FREEUSER", "SITEUSER")
+                .requestMatchers("/api/reservations/**").hasAnyRole("GLOBALUSER", "FREEUSER", "SITEUSER")
                 .requestMatchers("/api/admin/users/admins").hasRole("GLOBALADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/admin/users/admins/**").hasRole("GLOBALADMIN")
                 .requestMatchers("/api/admin/**").hasAnyRole("GLOBALADMIN", "LOCALADMIN")
                 .anyRequest().authenticated()
             )
@@ -60,7 +62,8 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, authException) ->
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication required"))
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(new DataSourceRoutingFilter(), JwtAuthenticationFilter.class);
 
         return http.build();
     }
@@ -70,7 +73,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:4200",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "http://localhost",
+                "http://localhost:80"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));

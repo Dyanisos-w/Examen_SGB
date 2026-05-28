@@ -1,8 +1,10 @@
-<div class="w-full min-h-screen bg-gray-50 p-6">
+<app-header></app-header>
+
+<div class="w-full min-h-screen bg-gray-900 text-white p-6">
 
   <!-- Retour -->
   <a routerLink="/home"
-     class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition mb-4">
+     class="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition mb-4">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
     </svg>
@@ -15,20 +17,20 @@
   </app-terrain-selector>
 
   <div class="space-y-6 mt-6">
-    <div class="bg-white p-4 rounded-xl shadow flex items-center gap-3">
-      <span class="text-sm text-gray-600">Site</span>
+    <div class="bg-[#111827] p-4 rounded-xl border border-white/10 flex items-center gap-3">
+      <span class="text-sm text-slate-300">Site</span>
 
-      <span *ngIf="loadingSites" class="text-gray-400 text-sm">Chargement des sites...</span>
+      <span *ngIf="loadingSites" class="text-slate-400 text-sm">Chargement des sites...</span>
 
       <select
         *ngIf="!loadingSites && canChooseSite"
-        class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-sky-500"
+        class="bg-slate-700 border-slate-600 text-white rounded-lg p-2 focus:ring-2 focus:ring-sky-500"
         [value]="selectedSiteId"
         (change)="onSiteChange(($any($event.target)).value)">
         <option *ngFor="let site of sites" [value]="site.siteId">{{ site.nom }}</option>
       </select>
 
-      <span *ngIf="!loadingSites && !canChooseSite" class="px-3 py-2 rounded-lg bg-gray-100 text-sm text-gray-700">
+      <span *ngIf="!loadingSites && !canChooseSite" class="px-3 py-2 rounded-lg bg-slate-700 text-sm text-slate-200">
         {{ getSelectedSiteName() }}
       </span>
     </div>
@@ -41,7 +43,7 @@
   </div>
 
   <!-- Légende -->
-  <div class="flex gap-6 mt-4 mb-2 text-xs text-gray-500">
+  <div class="flex gap-6 mt-4 mb-2 text-xs text-slate-400">
     <span class="flex items-center gap-1.5">
       <span class="w-4 h-4 rounded bg-sky-100 inline-block"></span> Disponible
     </span>

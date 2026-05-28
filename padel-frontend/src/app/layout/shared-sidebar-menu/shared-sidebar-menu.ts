@@ -44,9 +44,10 @@ export class SharedSidebarMenu {
   readonly adminLinks: NavItem[] = [
     { label: 'Dashboard admin', route: '/admin', exact: true },
     { label: 'Créer un terrain', route: '/admin/terrains/new' },
+    { label: "Horaires d'ouverture", route: '/admin/opening-hours' },
+    { label: 'Fermetures', route: '/admin/closures' },
     { label: 'Créer un admin local', route: '/admin/local-admins/new', globalAdminOnly: true },
     { label: 'Créer un site', route: '/admin/sites/new', globalAdminOnly: true }
-
   ];
 
   get showAdminSection(): boolean {

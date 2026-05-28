@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -16,7 +16,7 @@ export class ToastComponent implements OnInit, OnDestroy {
   toasts: Toast[] = [];
   private sub!: Subscription;
 
-  constructor(private ns: NotificationService) {}
+  constructor(private ns: NotificationService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     if (this.inline) this.ns.registerInline();
@@ -25,6 +25,7 @@ export class ToastComponent implements OnInit, OnDestroy {
       filter(() => this.inline || this.ns.inlineCount === 0)
     ).subscribe(t => {
       this.toasts.push(t);
+      this.cdr.detectChanges();
       if (t.duration > 0) {
         setTimeout(() => this.dismiss(t.id), t.duration);
       }

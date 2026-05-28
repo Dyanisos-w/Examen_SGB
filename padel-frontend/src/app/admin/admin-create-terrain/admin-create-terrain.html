@@ -1,42 +1,60 @@
-<main class="flex-1 p-4 lg:p-6 overflow-y-auto">
-  <div class="mx-auto w-full max-w-2xl rounded-xl border border-white/10 bg-[#111827] p-6 text-white">
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h2 class="text-xl font-semibold">Creer un terrain</h2>
-        <p class="text-sm text-slate-300">Action reservee aux administrateurs.</p>
-      </div>
-      <a routerLink="/admin" class="rounded-md bg-slate-700 px-3 py-2 text-sm hover:bg-slate-600">Retour dashboard</a>
-    </div>
+<div class="flex h-screen bg-gray-900 text-white">
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
-      <div>
-        <label class="mb-2 block text-sm text-slate-300">Nom du terrain</label>
-        <input formControlName="nom" type="text" class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm" />
-      </div>
+  <app-shared-sidebar-menu
+    [isOpen]="isSidebarOpen"
+    mode="admin"
+    (navigate)="closeSidebar()"
+    (logoutClick)="logout()">
+  </app-shared-sidebar-menu>
 
-      @if (isGlobalAdmin) {
-        <div>
-          <label class="mb-2 block text-sm text-slate-300">Site</label>
-          <select formControlName="siteId" class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm">
-            <option value="">Choisir un site</option>
-            @for (site of sites; track site.siteId) {
-              <option [value]="site.siteId">{{ site.nom }}</option>
-            }
-          </select>
-        </div>
-      } @else {
-        <div>
-          <label class="mb-2 block text-sm text-slate-300">Site associe</label>
-          <div class="rounded-lg border border-slate-700 bg-slate-800 p-2.5 text-sm text-slate-200">
-            {{ sites.length > 0 ? sites[0].nom : 'Site non charge' }}
+  @if (isSidebarOpen) {
+    <div class="fixed inset-0 z-40 bg-black/50 lg:hidden" (click)="closeSidebar()"></div>
+  }
+
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <app-admin-topbar (menuClick)="toggleSidebar()"></app-admin-topbar>
+
+    <main class="flex-1 p-4 lg:p-6 overflow-y-auto">
+      <div class="mx-auto w-full max-w-2xl rounded-xl border border-white/10 bg-[#111827] p-6 text-white">
+        <div class="mb-6 flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold">Creer un terrain</h2>
+            <p class="text-sm text-slate-300">Action reservee aux administrateurs.</p>
           </div>
-        </div>
-      }
 
-      <button type="submit" [disabled]="isLoading" class="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium hover:bg-sky-500 disabled:opacity-60">
-        {{ isLoading ? 'Creation...' : 'Creer le terrain' }}
-      </button>
-    </form>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+          <div>
+            <label class="mb-2 block text-sm text-slate-300">Nom du terrain</label>
+            <input formControlName="nom" type="text" class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm" />
+          </div>
+
+          @if (isGlobalAdmin) {
+            <div>
+              <label class="mb-2 block text-sm text-slate-300">Site</label>
+              <select formControlName="siteId" class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm">
+                <option value="">Choisir un site</option>
+                @for (site of sites; track site.siteId) {
+                  <option [value]="site.siteId">{{ site.nom }}</option>
+                }
+              </select>
+            </div>
+          } @else {
+            <div>
+              <label class="mb-2 block text-sm text-slate-300">Site associe</label>
+              <div class="rounded-lg border border-slate-700 bg-slate-800 p-2.5 text-sm text-slate-200">
+                {{ sites.length > 0 ? sites[0].nom : 'Site non charge' }}
+              </div>
+            </div>
+          }
+
+          <button type="submit" [disabled]="isLoading" class="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium hover:bg-sky-500 disabled:opacity-60">
+            {{ isLoading ? 'Creation...' : 'Creer le terrain' }}
+          </button>
+        </form>
+      </div>
+    </main>
   </div>
-</main>
+</div>
 

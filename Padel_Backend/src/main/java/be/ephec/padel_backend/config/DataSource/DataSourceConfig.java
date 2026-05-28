@@ -1,33 +1,46 @@
 package be.ephec.padel_backend.config.DataSource;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.boot.jdbc.DataSourceBuilder;
-
 @Configuration
+@RequiredArgsConstructor
 public class DataSourceConfig {
 
-    // USER
+    private final AppDataSourceProperties datasourceProperties;
+
     @Bean(name = "userDataSource")
-    @ConfigurationProperties(prefix = "app.datasource.user")
     public DataSource userDataSource() {
-        return DataSourceBuilder.create().build();
+        AppDataSourceProperties.Entry user = datasourceProperties.getUser();
+        String url = user.getJdbcUrl() != null ? user.getJdbcUrl() : user.getUrl();
+        return DataSourceBuilder.create()
+                .url(url)
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .driverClassName(user.getDriverClassName())
+                .build();
     }
 
-    // ADMIN
     @Bean(name = "adminDataSource")
-    @ConfigurationProperties(prefix = "app.datasource.admin")
     public DataSource adminDataSource() {
-        return DataSourceBuilder.create().build();
+        AppDataSourceProperties.Entry admin = datasourceProperties.getAdmin();
+        String url = admin.getJdbcUrl() != null ? admin.getJdbcUrl() : admin.getUrl();
+        return DataSourceBuilder.create()
+                .url(url)
+                .username(admin.getUsername())
+                .password(admin.getPassword())
+                .driverClassName(admin.getDriverClassName())
+                .build();
     }
 
-    // ROUTING
     @Bean(name = "routingDataSource")
     public DataSource routingDataSource(
             @Qualifier("userDataSource") DataSource userDataSource,
@@ -45,7 +58,6 @@ public class DataSourceConfig {
         return routingDataSource;
     }
 
-    // 🔥 CRITIQUE POUR SPRING BOOT
     @Bean
     @Primary
     public DataSource dataSource(
