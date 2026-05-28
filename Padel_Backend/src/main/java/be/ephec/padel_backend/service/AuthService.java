@@ -111,7 +111,7 @@ public class AuthService {
         user.setPrenom(request.prenom().trim());
         user.setPassword(passwordEncoder.encode(request.password()));
 
-        if ("LOCAL".equals(role) || "LOCALADMIN".equals(role)) {
+        if ("Site".equals(role) || "LOCALADMIN".equals(role)) {
             Site site = siteRepository.findFirstByNomIgnoreCase(request.ville().trim())
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Site introuvable pour la ville : " + request.ville()));
@@ -127,16 +127,16 @@ public class AuthService {
                 || isBlank(req.password()) || isBlank(role)) {
             throw new IllegalArgumentException("Tous les champs obligatoires doivent être remplis.");
         }
-        if (("LOCAL".equals(role) || "LOCALADMIN".equals(role)) && isBlank(req.ville())) {
+        if (("Site".equals(role) || "LOCALADMIN".equals(role)) && isBlank(req.ville())) {
             throw new IllegalArgumentException("La ville est requise pour un compte local.");
         }
     }
 
     private String generateMatricule(String role) {
         String prefix = switch (role) {
-            case "LOCAL"       -> "L";
+            case "Free"        -> "L";
             case "GLOBAL"      -> "G";
-            case "FREE"        -> "S";
+            case "Site"        -> "S";
             case "LOCALADMIN"  -> "LA";
             case "GLOBALADMIN" -> "GA";
             default -> throw new IllegalArgumentException("Type de compte inconnu : " + role);

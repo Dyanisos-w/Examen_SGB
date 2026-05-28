@@ -50,27 +50,27 @@
 
             <button
               type="button"
-              (click)="selectAccountType('LOCAL')"
+              (click)="selectAccountType('Site')"
               [ngClass]="{
-        'bg-sky-600 ring-2 ring-primary-400': registerForm.get('accountType')?.value === 'LOCAL',
-        'bg-gray-700 hover:bg-gray-600': registerForm.get('accountType')?.value !== 'LOCAL'
+        'bg-sky-600 ring-2 ring-primary-400': registerForm.get('accountType')?.value === 'Site',
+        'bg-gray-700 hover:bg-gray-600': registerForm.get('accountType')?.value !== 'Site'
       }"
               class="py-2.5 rounded-lg text-sm font-medium text-white transition">
-              Local
+              Site
             </button>
 
             <button
               type="button"
-              (click)="selectAccountType('FREE')"
+              (click)="selectAccountType('Free')"
               [ngClass]="{
-        'bg-sky-600 ring-2 ring-primary-400': registerForm.get('accountType')?.value === 'FREE',
-        'bg-gray-700 hover:bg-gray-600': registerForm.get('accountType')?.value !== 'FREE'
+        'bg-sky-600 ring-2 ring-primary-400': registerForm.get('accountType')?.value === 'Free',
+        'bg-gray-700 hover:bg-gray-600': registerForm.get('accountType')?.value !== 'Free'
       }"
               class="py-2.5 rounded-lg text-sm font-medium text-white transition">
               Libre
             </button>
           </div>
-          <div *ngIf="registerForm.get('accountType')?.value === 'LOCAL'" class="mt-4">
+          <div *ngIf="registerForm.get('accountType')?.value === 'Site'" class="mt-4">
 
             <label class="block mb-2 text-sm font-medium text-gray-300">
               Select your city
