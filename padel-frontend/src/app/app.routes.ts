@@ -10,6 +10,8 @@ import { AdminDashboard } from './admin/admin-dashboard/admin-dashboard';
 import { AdminRegisterLocalAdminComponent } from './admin/admin-register-local-admin/admin-register-local-admin';
 import { AdminCreateSiteComponent } from './admin/admin-create-site/admin-create-site';
 import { AdminCreateTerrainComponent } from './admin/admin-create-terrain/admin-create-terrain';
+import {AdminOpeningHoursComponent} from './admin/admin-opening-hours/admin-opening-hours';
+import { AdminClosuresComponent } from './admin/admin-closures/admin-closures';
 import { authGuard, adminGuard, globalAdminGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -25,5 +27,7 @@ export const routes: Routes = [
   { path: 'admin/local-admins/new', component: AdminRegisterLocalAdminComponent, canActivate: [globalAdminGuard] },
   { path: 'admin/sites/new', component: AdminCreateSiteComponent, canActivate: [globalAdminGuard] },
   { path: 'admin/terrains/new', component: AdminCreateTerrainComponent, canActivate: [adminGuard] },
+  { path: 'admin/opening-hours', component: AdminOpeningHoursComponent, canActivate: [adminGuard] },
+  { path: 'admin/closures', component: AdminClosuresComponent, canActivate: [adminGuard] },
   { path: '**',               redirectTo: 'home' }
 ];

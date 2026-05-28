@@ -1,15 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AdminTerrainManagementService } from '../services/admin-terrain-management.service';
 import { SiteDto, SiteService } from '../../services/site.service';
 import { NotificationService } from '../../services/notification.service';
+import { SharedSidebarMenu } from '../../layout/shared-sidebar-menu/shared-sidebar-menu';
+import { AdminTopbar } from '../admin-topbar/admin-topbar';
 
 @Component({
   selector: 'app-admin-create-terrain',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, SharedSidebarMenu, AdminTopbar],
   templateUrl: './admin-create-terrain.html',
   styleUrl: './admin-create-terrain.css'
 })
@@ -18,7 +20,9 @@ export class AdminCreateTerrainComponent {
   private readonly adminTerrainManagementService = inject(AdminTerrainManagementService);
   private readonly siteService = inject(SiteService);
   private readonly notification = inject(NotificationService);
+  private readonly router = inject(Router);
 
+  isSidebarOpen = false;
   isLoading = false;
   sites: SiteDto[] = [];
   isGlobalAdmin = false;
@@ -57,6 +61,14 @@ export class AdminCreateTerrainComponent {
         this.notification.error('Impossible de charger les sites.');
       }
     });
+  }
+
+  toggleSidebar(): void { this.isSidebarOpen = !this.isSidebarOpen; }
+  closeSidebar(): void { this.isSidebarOpen = false; }
+  logout(): void {
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    this.router.navigate(['/login']);
   }
 
   onSubmit(): void {

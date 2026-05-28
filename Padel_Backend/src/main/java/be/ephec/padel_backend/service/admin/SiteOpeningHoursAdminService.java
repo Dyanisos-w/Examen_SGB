@@ -122,11 +122,15 @@ public class SiteOpeningHoursAdminService {
         }
     }
 
+    /**
+     * Construit l'entité JPA depuis le DTO d'un jour.
+     * Si le jour est fermé, les heures restent null (convention « fermé = pas d'heure »).
+     */
     private SiteOpeningHours toEntity(Site site, SiteOpeningHoursAdminDayDto dayDto) {
         SiteOpeningHours openingHours = new SiteOpeningHours();
         openingHours.setSite(site);
         openingHours.setDayOfWeek(dayDto.dayOfWeek());
-        openingHours.setClosed(dayDto.closed());
+        // closed est déduit du null : on ne stocke pas le flag en base
         openingHours.setOpeningTime(dayDto.closed() ? null : dayDto.openingTime());
         openingHours.setClosingTime(dayDto.closed() ? null : dayDto.closingTime());
         return openingHours;
@@ -147,17 +151,25 @@ public class SiteOpeningHoursAdminService {
         return new SiteOpeningHoursAdminResponseDto(site.getSiteId(), site.getNom(), configured, days);
     }
 
+    /**
+     * Convertit une entité en DTO pour un jour donné.
+     * Le flag {@code closed} est calculé : un site est fermé si l'heure d'ouverture est null.
+     * Si aucune configuration n'existe encore, on retourne les horaires par défaut (ouvert).
+     */
     private SiteOpeningHoursAdminDayDto toDayDto(DayOfWeek dayOfWeek, SiteOpeningHours openingHours) {
         if (openingHours == null) {
             return new SiteOpeningHoursAdminDayDto(dayOfWeek, DEFAULT_OPENING_TIME, DEFAULT_CLOSING_TIME, false);
         }
 
+        // closed = vrai si pas d'heure d'ouverture (is_closed n'existe plus en base)
+        boolean closed = openingHours.getOpeningTime() == null;
         return new SiteOpeningHoursAdminDayDto(
                 dayOfWeek,
                 openingHours.getOpeningTime(),
                 openingHours.getClosingTime(),
-                openingHours.isClosed()
+                closed
         );
     }
+
 }
 

@@ -3,7 +3,7 @@
 
     <app-kpi-grid-widget [items]="data.kpis"></app-kpi-grid-widget>
 
-    <app-ui-card title="Weekly activity" subtitle="Simple placeholder chart">
+    <app-ui-card title="Weekly activity" subtitle="7 derniers jours">
       <div class="grid h-32 sm:h-44 lg:h-56 grid-cols-7 items-end gap-1 sm:gap-2 rounded-xl bg-slate-900/40 p-2 sm:p-3 lg:p-4">
         @for (point of data.chartPoints; track point.label) {
           <div class="flex flex-col items-center gap-1">
@@ -15,18 +15,125 @@
     </app-ui-card>
 
     <div class="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2 lg:gap-6">
-      <app-ui-card title="Équipe admin" subtitle="Administrateurs du site actif">
-        <div class="space-y-2 sm:space-y-3">
-          @for (member of data.teamMembers; track member.name) {
-            <div class="flex items-center justify-between rounded-xl border border-white/10 p-2 sm:p-3">
-              <div class="min-w-0 mr-2">
-                <p class="font-medium text-white truncate">{{ member.name }}</p>
-                <p class="text-sm text-slate-300 truncate">{{ member.role }}</p>
-              </div>
-              <span class="shrink-0 rounded-full bg-slate-700 px-2 py-1 text-xs text-slate-200">{{ member.status }}</span>
+
+      <!-- Widget Équipe admin / Joueurs -->
+      <app-ui-card
+        [title]="activeTab === 'admins' ? 'Équipe admin' : 'Joueurs'"
+        [subtitle]="activeTab === 'admins' ? 'Administrateurs du site actif' : 'Joueurs enregistrés sur ce site'">
+
+        <!-- Dropdown switcher dans le header (slot card-actions) -->
+        <div card-actions class="relative">
+          <button
+            (click)="isTabDropdownOpen = !isTabDropdownOpen"
+            class="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-slate-400 transition hover:bg-white/10 hover:text-white">
+            {{ activeTab === 'admins' ? 'Joueurs' : 'Équipe admin' }}
+            <span>▾</span>
+          </button>
+          @if (isTabDropdownOpen) {
+            <div class="absolute right-0 top-full z-20 mt-1 min-w-[150px] rounded-xl border border-white/15 bg-slate-700 py-1 shadow-xl">
+              <button
+                (click)="switchTab('admins')"
+                class="w-full px-4 py-2 text-left text-sm transition hover:bg-white/10"
+                [class.text-white]="activeTab === 'admins'"
+                [class.text-slate-300]="activeTab !== 'admins'">
+                {{ activeTab === 'admins' ? '✓ ' : '' }}Équipe admin
+              </button>
+              <button
+                (click)="switchTab('players')"
+                class="w-full px-4 py-2 text-left text-sm transition hover:bg-white/10"
+                [class.text-white]="activeTab === 'players'"
+                [class.text-slate-300]="activeTab !== 'players'">
+                {{ activeTab === 'players' ? '✓ ' : '' }}Joueurs
+              </button>
             </div>
           }
         </div>
+
+        <!-- Tab : Équipe admin -->
+        @if (activeTab === 'admins') {
+          <div class="space-y-2 sm:space-y-3">
+            @for (member of data.teamMembers; track member.matricule) {
+              <div class="rounded-xl border border-white/10 overflow-hidden">
+                <div
+                  class="flex cursor-pointer items-center justify-between p-2 transition hover:bg-white/5 sm:p-3"
+                  (click)="toggleMember(member.matricule)">
+                  <div class="mr-2 min-w-0">
+                    <p class="truncate font-medium text-white">{{ member.name }}</p>
+                    <p class="truncate text-sm text-slate-300">{{ member.role }}</p>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <span class="rounded-full bg-slate-700 px-2 py-1 text-xs text-slate-200">{{ member.status }}</span>
+                    <span class="text-xs text-slate-400">{{ selectedMember === member.matricule ? '▴' : '▾' }}</span>
+                  </div>
+                </div>
+                @if (selectedMember === member.matricule && isGlobalAdmin() && member.matricule.toUpperCase().startsWith('LA')) {
+                  <div class="flex justify-end border-t border-white/10 bg-white/5 px-3 py-2">
+                    <button
+                      (click)="$event.stopPropagation(); revokeAdmin(member.matricule)"
+                      class="rounded-lg bg-red-600/20 px-3 py-1.5 text-xs font-medium text-red-400 transition hover:bg-red-600 hover:text-white">
+                      Révoquer cet admin
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+            @if (data.teamMembers.length === 0) {
+              <p class="px-2 text-sm text-slate-400">Aucun administrateur pour ce site.</p>
+            }
+          </div>
+        }
+
+        <!-- Tab : Joueurs -->
+        @if (activeTab === 'players') {
+          <div class="space-y-2 sm:space-y-3">
+            @for (player of data.players; track player.matricule) {
+              <div
+                class="overflow-hidden rounded-xl border"
+                [ngClass]="{'border-red-500/30': player.isBanned, 'border-white/10': !player.isBanned}">
+                <div
+                  class="flex cursor-pointer items-center justify-between p-2 transition hover:bg-white/5 sm:p-3"
+                  (click)="toggleMember(player.matricule)">
+                  <div class="mr-2 min-w-0">
+                    <p class="truncate font-medium text-white">{{ player.name }}</p>
+                    <p class="truncate text-sm text-slate-300">{{ player.role }}</p>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <span
+                      class="rounded-full px-2 py-1 text-xs"
+                      [ngClass]="{
+                        'bg-red-600/30': player.isBanned, 'text-red-400': player.isBanned,
+                        'bg-slate-700': !player.isBanned, 'text-slate-200': !player.isBanned
+                      }">
+                      {{ player.isBanned ? 'banni' : player.status }}
+                    </span>
+                    <span class="text-xs text-slate-400">{{ selectedMember === player.matricule ? '▴' : '▾' }}</span>
+                  </div>
+                </div>
+                @if (selectedMember === player.matricule) {
+                  <div class="flex justify-end border-t border-white/10 bg-white/5 px-3 py-2">
+                    @if (player.isBanned) {
+                      <button
+                        (click)="$event.stopPropagation(); unbanPlayer(player.matricule)"
+                        class="rounded-lg bg-slate-600/40 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-600 hover:text-white">
+                        Lever le ban
+                      </button>
+                    } @else {
+                      <button
+                        (click)="$event.stopPropagation(); banPlayer(player.matricule)"
+                        class="rounded-lg bg-orange-600/20 px-3 py-1.5 text-xs font-medium text-orange-400 transition hover:bg-orange-600 hover:text-white">
+                        Bannir ce joueur
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+            @if (data.players.length === 0) {
+              <p class="px-2 text-sm text-slate-400">Aucun joueur pour ce site.</p>
+            }
+          </div>
+        }
+
       </app-ui-card>
 
       <app-ui-card title="Réservations" subtitle="Filtrées par site actif">
@@ -45,7 +152,34 @@
           }
         </div>
       </app-ui-card>
+
     </div>
 
   }
+
+  <!-- Modal de confirmation -->
+  @if (confirmModal.visible) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      (click)="closeConfirm()">
+      <div
+        class="w-80 rounded-2xl border border-white/15 bg-slate-800 p-6 shadow-2xl space-y-5"
+        (click)="$event.stopPropagation()">
+        <p class="text-center font-medium text-white">{{ confirmModal.message }}</p>
+        <div class="flex gap-3">
+          <button
+            (click)="confirmAction()"
+            class="flex-1 rounded-xl bg-green-600 py-2 text-sm font-semibold text-white transition hover:bg-green-500">
+            Oui
+          </button>
+          <button
+            (click)="closeConfirm()"
+            class="flex-1 rounded-xl bg-red-600 py-2 text-sm font-semibold text-white transition hover:bg-red-500">
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
 </main>

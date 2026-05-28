@@ -10,8 +10,8 @@ import java.util.List;
  * - GA → ROLE_GLOBALADMIN
  * - LA → ROLE_LOCALADMIN
  * - G  → ROLE_GLOBALUSER
- * - L  → ROLE_LOCALUSER
- * - S  → ROLE_FREEUSER
+ * - L  → ROLE_FREEUSER
+ * - S  → ROLE_SITEUSER
  */
 public class RoleExtractor {
 
@@ -27,7 +27,7 @@ public class RoleExtractor {
      * @throws IllegalArgumentException si le préfixe n'est pas reconnu
      */
     public static String extractRole(String matricule) {
-        if (matricule == null || matricule.length() < 1) {
+        if (matricule == null || matricule.isEmpty()) {
             throw new IllegalArgumentException("Matricule invalide: " + matricule);
         }
 
@@ -37,15 +37,15 @@ public class RoleExtractor {
             case "GA" -> "ROLE_GLOBALADMIN";
             case "LA" -> "ROLE_LOCALADMIN";
             case "G" -> "ROLE_GLOBALUSER";
-            case "L" -> "ROLE_LOCALUSER";
-            case "S" -> "ROLE_FREEUSER";
+            case "L" -> "ROLE_FREEUSER";
+            case "S" -> "ROLE_SITEUSER";
             default -> throw new IllegalArgumentException("Préfixe matricule non reconnu: " + prefix);
         };
     }
 
     /**
      * Extrait tous les rôles associés au matricule (principal + implicites).
-     * Exemple: GA → [ROLE_GLOBALADMIN, ROLE_LOCALADMIN, ROLE_GLOBALUSER, ROLE_LOCALUSER, ROLE_FREEUSER]
+     * Exemple: GA → [ROLE_GLOBALADMIN, ROLE_LOCALADMIN, ROLE_GLOBALUSER, ROLE_FREEUSER, ROLE_SITEUSER]
      *
      * @param matricule le matricule de l'utilisateur
      * @return liste des rôles
@@ -59,16 +59,16 @@ public class RoleExtractor {
         if ("ROLE_GLOBALADMIN".equals(mainRole)) {
             roles.add("ROLE_LOCALADMIN");
             roles.add("ROLE_GLOBALUSER");
-            roles.add("ROLE_LOCALUSER");
             roles.add("ROLE_FREEUSER");
+            roles.add("ROLE_SITEUSER");
         } else if ("ROLE_LOCALADMIN".equals(mainRole)) {
-            roles.add("ROLE_LOCALUSER");
             roles.add("ROLE_FREEUSER");
+            roles.add("ROLE_SITEUSER");
         } else if ("ROLE_GLOBALUSER".equals(mainRole)) {
-            roles.add("ROLE_LOCALUSER");
             roles.add("ROLE_FREEUSER");
-        } else if ("ROLE_LOCALUSER".equals(mainRole)) {
-            roles.add("ROLE_FREEUSER");
+            roles.add("ROLE_SITEUSER");
+        } else if ("ROLE_FREEUSER".equals(mainRole)) {
+            roles.add("ROLE_SITEUSER");
         }
 
         return roles;

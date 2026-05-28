@@ -15,12 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,6 +68,10 @@ class SiteClosureServiceTest {
     @Test
     void shouldApplyGlobalClosureForGlobalAdmin() {
         AdminAccessService.AdminScope scope = new AdminAccessService.AdminScope(true, null, "ROLE_GLOBALADMIN");
+
+        Site site1 = new Site(); site1.setSiteId(1);
+        Site site2 = new Site(); site2.setSiteId(2);
+
         SiteClosureAdminRequestDto dto = new SiteClosureAdminRequestDto(
                 null,
                 true,
@@ -74,12 +80,17 @@ class SiteClosureServiceTest {
                 "  "
         );
 
+        when(siteRepository.findAll()).thenReturn(List.of(site1, site2));
+
         service.applyClosure(scope, dto);
 
         ArgumentCaptor<SiteClosure> captor = ArgumentCaptor.forClass(SiteClosure.class);
-        verify(siteClosureRepository).save(captor.capture());
-        assertNull(captor.getValue().getSite());
-        assertNull(captor.getValue().getMotif());
+        verify(siteClosureRepository, times(2)).save(captor.capture());
+
+        List<SiteClosure> saved = captor.getAllValues();
+        assertEquals(2, saved.size());
+        assertNull(saved.get(0).getMotif());
+        assertNull(saved.get(1).getMotif());
         verify(siteRepository, never()).findById(org.mockito.ArgumentMatchers.anyInt());
     }
 

@@ -69,7 +69,7 @@ public class PlanningEngine {
 
         // ── 1 query batch réservations (remplace ~189 existsByTerrain…) ──────
         Set<String> occupiedKeys = buildOccupiedSlotSet(
-                siteId, weekDates.get(0), weekDates.get(weekDates.size() - 1));
+                siteId, weekDates.getFirst(), weekDates.getLast());
 
         List<PlanningSlotDto> planning = new ArrayList<>();
 
@@ -135,10 +135,17 @@ public class PlanningEngine {
         return generateSlots(null);
     }
 
+    /**
+     * Génère la liste des créneaux disponibles pour un jour donné.
+     * Un créneau dure 90 min + 15 min de battement = 105 min.
+     * Si {@code openingHours} est null ou si l'heure d'ouverture est null (site fermé),
+     * la liste retournée est vide.
+     */
     public List<LocalTime> generateSlots(SiteOpeningHours openingHours) {
         List<LocalTime> slots = new ArrayList<>();
 
-        if (openingHours != null && openingHours.isClosed()) {
+        // Un site est considéré fermé quand il n'a pas d'heure d'ouverture
+        if (openingHours != null && openingHours.getOpeningTime() == null) {
             return slots;
         }
 

@@ -1,14 +1,24 @@
 package be.ephec.padel_backend.model;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
+/**
+ * Représente les horaires d'ouverture d'un site pour un jour de la semaine.
+ * Un site est considéré fermé ce jour-là si {@code heureOuverture} est null.
+ * Contrainte : une seule entrée par couple (site, jour).
+ */
+@Getter
+@Setter
 @Entity
 @Table(
-        name = "SiteOpeningHours",
-        uniqueConstraints = @UniqueConstraint(name = "uk_site_opening_hours_site_day", columnNames = {"site_id", "day_of_week"})
+        name = "site_opening_hours",
+        uniqueConstraints = @UniqueConstraint(name = "uk_site_opening_hours_site_day", columnNames = {"site_id", "jour_semaine"})
 )
 public class SiteOpeningHours {
 
@@ -22,64 +32,33 @@ public class SiteOpeningHours {
     private Site site;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "day_of_week", nullable = false, length = 16)
+    @Column(name = "jour_semaine", nullable = false, length = 16)
     private DayOfWeek dayOfWeek;
 
-    @Column(name = "opening_time")
-    private LocalTime openingTime;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @Column(name = "heure_ouverture")
+    private LocalTime heureOuverture;
 
-    @Column(name = "closing_time")
-    private LocalTime closingTime;
-
-    @Column(name = "is_closed", nullable = false)
-    private boolean closed;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Site getSite() {
-        return site;
-    }
-
-    public void setSite(Site site) {
-        this.site = site;
-    }
-
-    public DayOfWeek getDayOfWeek() {
-        return dayOfWeek;
-    }
-
-    public void setDayOfWeek(DayOfWeek dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @Column(name = "heure_fermeture")
+    private LocalTime heureFermeture;
 
     public LocalTime getOpeningTime() {
-        return openingTime;
+        return heureOuverture;
     }
 
-    public void setOpeningTime(LocalTime openingTime) {
-        this.openingTime = openingTime;
+    public void setOpeningTime(LocalTime heureOuverture) {
+        this.heureOuverture = heureOuverture;
     }
 
     public LocalTime getClosingTime() {
-        return closingTime;
+        return heureFermeture;
     }
 
-    public void setClosingTime(LocalTime closingTime) {
-        this.closingTime = closingTime;
+    public void setClosingTime(LocalTime heureFermeture) {
+        this.heureFermeture = heureFermeture;
     }
 
-    public boolean isClosed() {
-        return closed;
-    }
-
-    public void setClosed(boolean closed) {
-        this.closed = closed;
-    }
 }
-

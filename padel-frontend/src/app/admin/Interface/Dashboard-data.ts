@@ -8,4 +8,5 @@ export interface DashboardData {
   chartPoints: ChartPoint[];
   teamMembers: TeamMember[];
   taskItems: TaskItem[];
+  players: TeamMember[];
 }

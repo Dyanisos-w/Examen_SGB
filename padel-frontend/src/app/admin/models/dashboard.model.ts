@@ -1,4 +1,4 @@
-export type DashboardPeriod = 'today' | '7d' | 'month' | 'currentmonth' | 'year';
+export type DashboardPeriod = 'today' | '7d' | 'week' | 'month' | 'currentmonth' | 'next30d' | 'year';
 
 export interface DashboardOverviewApi {
   totalReservations: number;

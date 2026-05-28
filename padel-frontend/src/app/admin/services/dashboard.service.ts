@@ -22,27 +22,42 @@ export class DashboardService {
 
   constructor(private readonly http: HttpClient) {}
 
+  readonly chartPeriods: { key: DashboardPeriod; label: string }[] = [
+    { key: '7d',     label: '7 jours'       },
+    { key: 'week',   label: 'Cette semaine'  },
+    { key: 'next30d', label: 'Mois à venir' },
+    { key: 'year',   label: 'Cette année'   },
+  ];
+
   getDashboardData(period: DashboardPeriod = '7d', siteId: number | 'ALL' = 'ALL'): Observable<DashboardData> {
-	return forkJoin({
-	  overview: this.http.get<DashboardOverviewApi>(`${this.apiUrl}/overview`, {
-		params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() }
-	  }),
-	  reservations: this.http.get<DashboardReservationRowApi[]>(`${this.apiUrl}/reservations`, { params: { period } }),
-	  admins: this.http.get<DashboardMemberRowApi[]>(`${this.apiUrl}/admins`),
-	}).pipe(
-	  map(({ overview, reservations, admins }) => {
-		const filtered = siteId === 'ALL' ? reservations : reservations.filter(r => r.siteId === siteId);
-		const filteredAdmins = siteId === 'ALL'
-		  ? admins
-		  : admins.filter(a => a.siteId === siteId || a.siteId === null);
-		return {
-		  kpis: this.mapKpis(overview),
-		  chartPoints: this.mapChartPoints(filtered),
-		  teamMembers: this.mapTeamMembers(filteredAdmins),
-		  taskItems: this.mapTaskItems(filtered),
-		};
-	  })
-	);
+    return forkJoin({
+      overview: this.http.get<DashboardOverviewApi>(`${this.apiUrl}/overview`, {
+        params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() }
+      }),
+      reservations: this.http.get<DashboardReservationRowApi[]>(`${this.apiUrl}/reservations`, { params: { period } }),
+      admins: this.http.get<DashboardMemberRowApi[]>(`${this.apiUrl}/admins`),
+      members: this.http.get<DashboardMemberRowApi[]>(`${this.apiUrl}/members`),
+      perDay: this.http.get<{ label: string; value: number }[]>(`${this.apiUrl}/reservations-per-day`, {
+        params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() }
+      }),
+    }).pipe(
+      map(({ overview, reservations, admins, members, perDay }) => {
+        const filtered = siteId === 'ALL' ? reservations : reservations.filter(r => r.siteId === siteId);
+        const filteredAdmins = siteId === 'ALL'
+          ? admins
+          : admins.filter(a => a.siteId === siteId || a.siteId === null);
+        const filteredMembers = siteId === 'ALL'
+          ? members
+          : members.filter(m => m.siteId === siteId);
+        return {
+          kpis: this.mapKpis(overview),
+          chartPoints: this.mapChartPoints(perDay, period),
+          teamMembers: this.mapTeamMembers(filteredAdmins),
+          taskItems: this.mapTaskItems(filtered),
+          players: this.mapTeamMembers(filteredMembers),
+        };
+      })
+    );
   }
 
   getReservationsPerDay(period: DashboardPeriod = '7d', siteId: number | 'ALL' = 'ALL') {
@@ -53,63 +68,97 @@ export class DashboardService {
   }
 
   private mapKpis(overview: DashboardOverviewApi): KpiItem[] {
-	return [
-	  { label: 'Reservations', value: Math.round(overview.totalReservations), delta: 0, trend: 'flat' },
-	  { label: 'Revenue (EUR)', value: Math.round(overview.totalRevenue), delta: 0, trend: 'flat' },
-	  { label: 'Players', value: Math.round(overview.totalUsers), delta: 0, trend: 'flat' },
-	  { label: 'Occupancy (%)', value: Math.round(overview.occupancyRate), delta: 0, trend: 'flat' },
-	];
+    return [
+      { label: 'Reservations', value: Math.round(overview.totalReservations), delta: 0, trend: 'flat' },
+      { label: 'Revenue (EUR)', value: Math.round(overview.totalRevenue), delta: 0, trend: 'flat' },
+      { label: 'Players', value: Math.round(overview.totalUsers), delta: 0, trend: 'flat' },
+      { label: 'Occupancy (%)', value: Math.round(overview.occupancyRate), delta: 0, trend: 'flat' },
+    ];
   }
 
-  private mapChartPoints(reservations: DashboardReservationRowApi[]): ChartPoint[] {
-	const byDate = new Map<string, number>();
+  private mapChartPoints(perDay: { label: string; value: number }[], period: DashboardPeriod): ChartPoint[] {
+    if (period === 'next30d') {
+      return this.groupByWeek(perDay);
+    }
+    if (period === 'year') {
+      return this.groupByMonth(perDay);
+    }
+    const last7 = perDay.slice(-7);
+    const maxValue = Math.max(...last7.map(p => p.value), 1);
+    return last7.map(p => ({
+      label: p.label.slice(5),
+      value: Math.round((p.value / maxValue) * 100),
+    }));
+  }
 
-	for (const reservation of reservations) {
-	  const date = reservation.dateReservation;
-	  byDate.set(date, (byDate.get(date) ?? 0) + 1);
-	}
+  private groupByWeek(perDay: { label: string; value: number }[]): ChartPoint[] {
+    const weekMap = new Map<string, number>();
+    for (const p of perDay) {
+      const d = new Date(p.label + 'T00:00:00');
+      const weekNum = this.isoWeekNumber(d);
+      const key = `S.${weekNum}`;
+      weekMap.set(key, (weekMap.get(key) ?? 0) + p.value);
+    }
+    const entries = Array.from(weekMap.entries());
+    const maxValue = Math.max(...entries.map(([, v]) => v), 1);
+    return entries.map(([label, count]) => ({
+      label,
+      value: Math.round((count / maxValue) * 100),
+    }));
+  }
 
-	return Array.from(byDate.entries())
-	  .sort(([a], [b]) => a.localeCompare(b))
-	  .map(([date, count]) => ({
-		label: date.slice(5),
-		value: count,
-	  }));
+  private groupByMonth(perDay: { label: string; value: number }[]): ChartPoint[] {
+    const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jui', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const monthMap = new Map<string, number>();
+    for (const p of perDay) {
+      const d = new Date(p.label + 'T00:00:00');
+      const key = monthNames[d.getMonth()];
+      monthMap.set(key, (monthMap.get(key) ?? 0) + p.value);
+    }
+    const entries = Array.from(monthMap.entries());
+    const maxValue = Math.max(...entries.map(([, v]) => v), 1);
+    return entries.map(([label, count]) => ({
+      label,
+      value: Math.round((count / maxValue) * 100),
+    }));
+  }
+
+  private isoWeekNumber(date: Date): number {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.valueOf() - yearStart.valueOf()) / 86400000) + 1) / 7);
   }
 
   private mapTeamMembers(members: DashboardMemberRowApi[]): TeamMember[] {
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-
-	return members.slice(0, 6).map((member) => {
-	  const blockedUntil = member.interditReservationJusqua ? new Date(member.interditReservationJusqua) : null;
-	  const isBlocked = blockedUntil !== null && blockedUntil >= today;
-
-	  return {
-		name: `${member.prenom} ${member.nom}`,
-		role: member.siteNom ? `Member - ${member.siteNom}` : 'Member - Global',
-		status: isBlocked ? 'busy' : 'online',
-	  };
-	});
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return members.map((member) => {
+      const blockedUntil = member.interditReservationJusqua ? new Date(member.interditReservationJusqua) : null;
+      const isBanned = blockedUntil !== null && blockedUntil >= today;
+      return {
+        matricule: member.matricule,
+        name: `${member.prenom} ${member.nom}`,
+        role: member.siteNom ? `Member - ${member.siteNom}` : 'Member - Global',
+        status: isBanned ? 'busy' : 'online',
+        isBanned,
+      };
+    });
   }
 
   private mapTaskItems(reservations: DashboardReservationRowApi[]): TaskItem[] {
-	return reservations.slice(0, 5).map((reservation) => ({
-	  title: `Reservation #${reservation.reservationId} - ${reservation.statut}`,
-	  priority: this.priorityFromStatus(reservation.statut),
-	  dueLabel: reservation.dateReservation,
-	  done: ['CONFIRMED', 'PAYE', 'PAID'].includes((reservation.statut ?? '').toUpperCase()),
-	}));
+    return reservations.slice(0, 5).map((reservation) => ({
+      title: `Reservation #${reservation.reservationId} - ${reservation.statut}`,
+      priority: this.priorityFromStatus(reservation.statut),
+      dueLabel: reservation.dateReservation,
+      done: ['CONFIRMED', 'PAYE', 'PAID'].includes((reservation.statut ?? '').toUpperCase()),
+    }));
   }
 
   private priorityFromStatus(status: string): TaskItem['priority'] {
-	const normalized = (status ?? '').toUpperCase();
-	if (normalized.includes('ANNU')) {
-	  return 'high';
-	}
-	if (normalized.includes('ATTENTE') || normalized.includes('PENDING')) {
-	  return 'medium';
-	}
-	return 'low';
+    const normalized = (status ?? '').toUpperCase();
+    if (normalized.includes('ANNU')) return 'high';
+    if (normalized.includes('ATTENTE') || normalized.includes('PENDING')) return 'medium';
+    return 'low';
   }
 }

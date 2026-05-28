@@ -151,8 +151,13 @@ public class AdminDashboardService {
         return openingHoursByDay;
     }
 
+    /**
+     * Calcule le nombre de créneaux disponibles dans la journée.
+     * Site fermé = heure d'ouverture null → 0 créneau.
+     */
     private long computeSlotsForDay(SiteOpeningHours openingHours) {
-        if (openingHours != null && openingHours.isClosed()) {
+        // Fermé si pas d'heure d'ouverture (is_closed supprimé de la table)
+        if (openingHours != null && openingHours.getOpeningTime() == null) {
             return 0;
         }
 
@@ -179,7 +184,7 @@ public class AdminDashboardService {
         }
 
         double rate = (numerator * 100.0) / denominator;
-        return Math.max(0.0, Math.min(100.0, rate));
+        return Math.clamp(rate, 0.0, 100.0);
     }
 
     private DashboardReservationRowDto toReservationRow(Reservation reservation) {

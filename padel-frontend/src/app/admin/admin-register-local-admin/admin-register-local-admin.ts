@@ -1,19 +1,23 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AdminUserManagementService } from '../services/admin-user-management.service';
 import { SiteDto, SiteService } from '../../services/site.service';
 import { NotificationService } from '../../services/notification.service';
+import { SharedSidebarMenu } from '../../layout/shared-sidebar-menu/shared-sidebar-menu';
+import { AdminTopbar } from '../admin-topbar/admin-topbar';
 
 @Component({
   selector: 'app-admin-register-local-admin',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, SharedSidebarMenu, AdminTopbar],
   templateUrl: './admin-register-local-admin.html',
   styleUrl: './admin-register-local-admin.css'
 })
 export class AdminRegisterLocalAdminComponent {
+  private readonly router = inject(Router);
+  isSidebarOpen = false;
   private readonly fb = inject(FormBuilder);
   private readonly adminUserManagementService = inject(AdminUserManagementService);
   private readonly siteService = inject(SiteService);
@@ -43,6 +47,14 @@ export class AdminRegisterLocalAdminComponent {
         this.notification.error('Impossible de charger les villes pour le moment.');
       }
     });
+  }
+
+  toggleSidebar(): void { this.isSidebarOpen = !this.isSidebarOpen; }
+  closeSidebar(): void { this.isSidebarOpen = false; }
+  logout(): void {
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    this.router.navigate(['/login']);
   }
 
   onSubmit() {

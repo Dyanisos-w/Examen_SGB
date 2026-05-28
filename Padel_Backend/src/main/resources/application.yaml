@@ -1,7 +1,6 @@
 spring:
   datasource:
     url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
-    jdbc-url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true}
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:Padel!123}
     driver-class-name: ${DB_DRIVER:com.microsoft.sqlserver.jdbc.SQLServerDriver}
