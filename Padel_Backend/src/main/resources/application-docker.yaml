@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+app:
+  datasource:
+    user:
+      url: jdbc:sqlserver://sqlserver:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
+      jdbc-url: jdbc:sqlserver://sqlserver:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
+      username: Utilisateur_Padel
+      password: Utilisateur@Padel1
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    admin:
+      url: jdbc:sqlserver://sqlserver:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
+      jdbc-url: jdbc:sqlserver://sqlserver:1433;databaseName=PadelDB;encrypt=false;trustServerCertificate=true
+      username: Admin_Padel
+      password: Administrateur@Padel1
+      driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver

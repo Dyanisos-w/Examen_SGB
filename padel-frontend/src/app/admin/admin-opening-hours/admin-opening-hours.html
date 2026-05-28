@@ -1,0 +1,106 @@
+<div class="flex h-screen bg-gray-900 text-white">
+
+  <app-shared-sidebar-menu
+    [isOpen]="isSidebarOpen"
+    mode="admin"
+    (navigate)="closeSidebar()"
+    (logoutClick)="logout()">
+  </app-shared-sidebar-menu>
+
+  @if (isSidebarOpen) {
+    <div class="fixed inset-0 z-40 bg-black/50 lg:hidden" (click)="closeSidebar()"></div>
+  }
+
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <app-admin-topbar (menuClick)="toggleSidebar()"></app-admin-topbar>
+
+    <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+      <div class="mx-auto w-full max-w-2xl space-y-4">
+
+        <!-- Card 1 : sélecteur de site -->
+        <div class="rounded-xl border border-white/10 bg-[#111827] p-6">
+          <h2 class="text-xl font-semibold">Horaire de fermeture</h2>
+          <p class="mt-1 text-sm text-slate-400">Configurez les horaires par site ou ajoutez des fermetures exceptionnelles.</p>
+
+          <div class="mt-4">
+            <label class="mb-2 block text-sm text-slate-300">Site</label>
+            @if (isGlobalAdmin) {
+              <select
+                class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm"
+                [value]="selectedSiteKey"
+                (change)="onSiteChange($event)">
+                <option value="GLOBAL">🌐 Global — tous les sites</option>
+                @for (site of sites; track site.siteId) {
+                  <option [value]="site.siteId">{{ site.nom }}</option>
+                }
+              </select>
+            } @else {
+              <div class="rounded-lg border border-slate-700 bg-slate-800 p-2.5 text-sm text-slate-200">
+                {{ sites.length > 0 ? sites[0].nom : 'Site non chargé' }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Card 2 : grille des horaires -->
+        @if (mode !== null) {
+          <div class="rounded-xl border border-white/10 bg-[#111827] p-6">
+            <h3 class="mb-4 text-lg font-semibold">Horaires d'ouverture du site</h3>
+
+            <form [formGroup]="hoursForm" (ngSubmit)="onSubmitHours()">
+              <div formArrayName="days" class="space-y-2">
+                @for (ctrl of hoursDays.controls; track $index) {
+                  <div [formGroupName]="$index"
+                       class="flex flex-wrap items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 px-4 py-3">
+
+                    <!-- Nom du jour -->
+                    <span class="w-24 shrink-0 text-sm font-bold">
+                      {{ dayLabels[ctrl.get('dayOfWeek')?.value] }}
+                    </span>
+
+                    <!-- Checkbox Fermé -->
+                    <label class="flex cursor-pointer items-center gap-1.5 text-sm text-slate-300">
+                      <input
+                        type="checkbox"
+                        formControlName="closed"
+                        class="h-4 w-4 accent-sky-500"
+                        (change)="toggleClosed($index)" />
+                      Fermé
+                    </label>
+
+                    <!-- Inputs heures (masqués si fermé) -->
+                    @if (!ctrl.get('closed')?.value) {
+                      <div class="flex items-center gap-2 text-sm">
+                        <span class="text-slate-400">Ouv.</span>
+                        <input
+                          type="time"
+                          formControlName="openingTime"
+                          class="rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm" />
+                      </div>
+                      <div class="flex items-center gap-2 text-sm">
+                        <span class="text-slate-400">Ferm.</span>
+                        <input
+                          type="time"
+                          formControlName="closingTime"
+                          class="rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm" />
+                      </div>
+                    }
+
+                  </div>
+                }
+              </div>
+
+              <button
+                type="submit"
+                [disabled]="isLoading"
+                class="mt-5 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-60">
+                {{ isLoading ? 'Sauvegarde...' : 'Sauvegarder les horaires' }}
+              </button>
+            </form>
+          </div>
+        }
+
+      </div>
+    </main>
+  </div>
+</div>
