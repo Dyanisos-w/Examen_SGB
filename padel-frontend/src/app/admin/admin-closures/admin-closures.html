@@ -1,0 +1,135 @@
+<div class="flex h-screen bg-gray-900 text-white">
+
+  <app-shared-sidebar-menu
+    [isOpen]="isSidebarOpen"
+    mode="admin"
+    (navigate)="closeSidebar()"
+    (logoutClick)="logout()">
+  </app-shared-sidebar-menu>
+
+  @if (isSidebarOpen) {
+    <div class="fixed inset-0 z-40 bg-black/50 lg:hidden" (click)="closeSidebar()"></div>
+  }
+
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <app-admin-topbar (menuClick)="toggleSidebar()"></app-admin-topbar>
+
+    <main class="flex-1 overflow-y-auto p-4 lg:p-6">
+      <div class="mx-auto w-full max-w-2xl space-y-4">
+
+        <!-- Card 1 : En-tête + sélecteur de site -->
+        <div class="rounded-xl border border-white/10 bg-[#111827] p-6">
+          <h2 class="text-xl font-semibold">Horaire de fermeture</h2>
+          <p class="mt-1 text-sm text-slate-400">Configurez les horaires par site ou ajoutez des fermetures exceptionnelles.</p>
+
+          <div class="mt-4">
+            <label class="mb-2 block text-sm text-slate-300">Site</label>
+            @if (isGlobalAdmin) {
+              <select
+                class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm"
+                [value]="selectedSiteId === null ? '' : selectedSiteId"
+                (change)="onSiteChange($any($event.target).value)">
+                <option value="">🌐 Global — fermetures exceptionnelles</option>
+                @for (site of sites; track site.siteId) {
+                  <option [value]="site.siteId">{{ site.nom }}</option>
+                }
+              </select>
+            } @else {
+              <div class="rounded-lg border border-slate-700 bg-slate-800 p-2.5 text-sm text-slate-200">
+                {{ sites.length > 0 ? sites[0].nom : 'Site non chargé' }}
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Card 2 : Formulaire d'ajout -->
+        <div [class]="selectedSiteId === null
+          ? 'rounded-xl border border-orange-500 bg-[#111827] p-6'
+          : 'rounded-xl border border-white/10 bg-[#111827] p-6'">
+
+          @if (selectedSiteId === null) {
+            <h3 class="text-lg font-semibold text-orange-400">Fermeture exceptionnelle — tous les sites</h3>
+            <p class="mt-1 text-sm text-slate-400">Définissez une plage de dates pendant laquelle tous les sites seront fermés.</p>
+          } @else {
+            <h3 class="text-lg font-semibold text-white">Fermeture exceptionnelle — ce site</h3>
+            <p class="mt-1 text-sm text-slate-400">Définissez une plage de dates pendant laquelle ce site sera fermé.</p>
+          }
+
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mt-4 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="mb-2 block text-sm text-slate-300">Date de début</label>
+                <input
+                  formControlName="startDate"
+                  type="date"
+                  class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm" />
+              </div>
+              <div>
+                <label class="mb-2 block text-sm text-slate-300">Date de fin</label>
+                <input
+                  formControlName="endDate"
+                  type="date"
+                  class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm" />
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm text-slate-300">
+                Motif <span class="text-slate-500">(optionnel)</span>
+              </label>
+              <input
+                formControlName="reason"
+                type="text"
+                placeholder="ex: Travaux, Jour férié..."
+                class="w-full rounded-lg border border-slate-600 bg-slate-700 p-2.5 text-sm placeholder-slate-500" />
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-orange-400 disabled:opacity-60">
+              {{ isLoading ? 'Ajout en cours...' : 'Ajouter la fermeture' }}
+            </button>
+          </form>
+        </div>
+
+        <!-- Card 3 : Liste des fermetures planifiées -->
+        <div class="rounded-xl border border-white/10 bg-[#111827] p-6">
+          <h3 class="text-lg font-semibold">Fermetures planifiées</h3>
+
+          @if (closures.length === 0) {
+            <p class="mt-3 text-sm text-slate-500">Aucune fermeture exceptionnelle planifiée.</p>
+          } @else {
+            <ul class="mt-3 space-y-2">
+              @for (closure of closures; track closure.id) {
+                <li class="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800 p-3 text-sm">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-medium text-white">
+                      {{ formatDate(closure.startDate) }} → {{ formatDate(closure.endDate) }}
+                    </span>
+                    @if (closure.reason) {
+                      <span class="text-slate-400">— {{ closure.reason }}</span>
+                    }
+                    @if (selectedSiteId !== null && closure.global) {
+                      <span class="rounded-full bg-orange-500/20 px-2 py-0.5 text-xs font-medium text-orange-400">
+                        tous les sites
+                      </span>
+                    }
+                  </div>
+                  @if (isGlobalAdmin && (selectedSiteId === null ? closure.global : !closure.global)) {
+                    <button
+                      (click)="deleteClosure(closure.id)"
+                      class="ml-4 shrink-0 rounded-md bg-red-600/20 px-2 py-1 text-xs text-red-400 hover:bg-red-600/40">
+                      Supprimer
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>

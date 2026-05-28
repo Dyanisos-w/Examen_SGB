@@ -1,0 +1,24 @@
+# IDE – IntelliJ
+out/
+*.iml
+.idea/
+
+# Claude AI
+.claude/
+
+# Node modules (root-level)
+node_modules/
+
+# Runtime logs
+*.err
+*.out
+
+# IntelliJ inspection report (generated at project root)
+index.html
+script.js
+styles.css
+mockup-dashboard.html
+
+# AI-generated summaries
+RESPONSIVE_FIX_SUMMARY.md
+RESPONSIVE_IMPLEMENTATION_COMPLETE.md
