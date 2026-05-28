@@ -37,21 +37,21 @@ class AuthServiceRegisterLocalUserTest {
     @Test
     void shouldRegisterLocalUserSuccessfully() {
         AuthController.RegisterRequest request = new AuthController.RegisterRequest(
-                "Dupont", "Alice", "secret123", "LOCAL", "Bruxelles"
+                "Dupont", "Alice", "secret123", "Site", "Bruxelles"
         );
 
         Site site = new Site();
         site.setSiteId(10);
         site.setNom("Bruxelles");
 
-        when(utilisateurRepository.countByMatriculeStartingWith("L")).thenReturn(0L);
+        when(utilisateurRepository.countByMatriculeStartingWith("S")).thenReturn(0L);
         when(siteRepository.findFirstByNomIgnoreCase("Bruxelles")).thenReturn(Optional.of(site));
         when(passwordEncoder.encode("secret123")).thenReturn("hashed-password");
 
         String matricule = authService.register(request);
 
-        assertEquals("L00001", matricule);
-        assertTrue(matricule.startsWith("L"));
+        assertEquals("S00001", matricule);
+        assertTrue(matricule.startsWith("S"));
 
         ArgumentCaptor<Utilisateur> userCaptor = ArgumentCaptor.forClass(Utilisateur.class);
         verify(utilisateurRepository).save(userCaptor.capture());
@@ -62,7 +62,7 @@ class AuthServiceRegisterLocalUserTest {
         assertEquals("hashed-password", saved.getPassword());
         assertEquals(site, saved.getSiteAssociated());
 
-        verify(utilisateurRepository).countByMatriculeStartingWith("L");
+        verify(utilisateurRepository).countByMatriculeStartingWith("S");
         verify(siteRepository).findFirstByNomIgnoreCase("Bruxelles");
         verify(passwordEncoder).encode("secret123");
         verifyNoMoreInteractions(utilisateurRepository, siteRepository, passwordEncoder);

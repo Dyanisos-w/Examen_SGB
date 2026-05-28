@@ -30,7 +30,7 @@ class AuthServiceInvalidInputTest {
     @Test
     void shouldThrowWhenNameIsBlank() {
         AuthController.RegisterRequest request = new AuthController.RegisterRequest(
-                " ", "Alice", "secret123", "LOCAL", "Bruxelles"
+                " ", "Alice", "secret123", "Site", "Bruxelles"
         );
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,

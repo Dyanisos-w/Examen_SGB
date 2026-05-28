@@ -59,7 +59,7 @@ export class RegisterComponent {
   selectAccountType(type: string): void {
     this.registerForm.patchValue({ accountType: type });
     const villeControl = this.registerForm.get('ville');
-    if (type === 'LOCAL') {
+    if (type === 'Site') {
       villeControl?.enable();
       villeControl?.setValidators(Validators.required);
     } else {
@@ -84,7 +84,7 @@ export class RegisterComponent {
       prenom: this.registerForm.value.prenom,
       password: this.registerForm.value.password,
       accountType,
-      ville: accountType === 'LOCAL' ? this.registerForm.value.ville : null
+      ville: accountType === 'Site' ? this.registerForm.value.ville : null
     };
 
     this.http.post<{ matricule: string }>(`${environment.apiBaseUrl}/api/auth/register`, data).subscribe({
