@@ -32,7 +32,7 @@ export class DashboardService {
   getDashboardData(period: DashboardPeriod = '7d', siteId: number | 'ALL' = 'ALL'): Observable<DashboardData> {
     return forkJoin({
       overview: this.http.get<DashboardOverviewApi>(`${this.apiUrl}/overview`, {
-        params: { period, siteId: siteId === 'ALL' ? '' : siteId.toString() }
+        params: { period: '7d', siteId: siteId === 'ALL' ? '' : siteId.toString() }
       }),
       reservations: this.http.get<DashboardReservationRowApi[]>(`${this.apiUrl}/reservations`, { params: { period } }),
       admins: this.http.get<DashboardMemberRowApi[]>(`${this.apiUrl}/admins`),
@@ -48,7 +48,7 @@ export class DashboardService {
           : admins.filter(a => a.siteId === siteId || a.siteId === null);
         const filteredMembers = siteId === 'ALL'
           ? members
-          : members.filter(m => m.siteId === siteId);
+          : members.filter(m => m.siteId === siteId || m.siteId === null);
         return {
           kpis: this.mapKpis(overview),
           chartPoints: this.mapChartPoints(perDay, period),
@@ -133,17 +133,27 @@ export class DashboardService {
   private mapTeamMembers(members: DashboardMemberRowApi[]): TeamMember[] {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return members.map((member) => {
-      const blockedUntil = member.interditReservationJusqua ? new Date(member.interditReservationJusqua) : null;
-      const isBanned = blockedUntil !== null && blockedUntil >= today;
-      return {
-        matricule: member.matricule,
-        name: `${member.prenom} ${member.nom}`,
-        role: member.siteNom ? `Member - ${member.siteNom}` : 'Member - Global',
-        status: isBanned ? 'busy' : 'online',
-        isBanned,
-      };
-    });
+    return members
+      .slice()
+      .sort((a, b) => {
+        const gA = a.siteNom ? `0_${a.siteNom}` : a.matricule.toUpperCase().startsWith('L') ? '1_Libre' : '2_Global';
+        const gB = b.siteNom ? `0_${b.siteNom}` : b.matricule.toUpperCase().startsWith('L') ? '1_Libre' : '2_Global';
+        const c = gA.localeCompare(gB);
+        return c !== 0 ? c : `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`);
+      })
+      .map((member) => {
+        const blockedUntil = member.interditReservationJusqua ? new Date(member.interditReservationJusqua) : null;
+        const isBanned = blockedUntil !== null && blockedUntil >= today;
+        return {
+          matricule: member.matricule,
+          name: `${member.prenom} ${member.nom}`,
+          role: member.siteNom
+            ? `Member - ${member.siteNom}`
+            : member.matricule.toUpperCase().startsWith('L') ? 'Member - Libre' : 'Member - Global',
+          status: isBanned ? 'busy' : 'online',
+          isBanned,
+        };
+      });
   }
 
   private mapTaskItems(reservations: DashboardReservationRowApi[]): TaskItem[] {

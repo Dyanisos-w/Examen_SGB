@@ -50,9 +50,9 @@ public class ReservationController {
     /** Réservations publiques disponibles */
     @GetMapping("/public")
     public ResponseEntity<List<PublicReservationDto>> getPublicReservations(
-            @RequestParam(required = false) Integer siteId) {
-        Integer id = siteId != null ? siteId : 1;
-        return ResponseEntity.ok(reservationService.getPublicReservationDtos(id));
+            @RequestParam(required = false) Integer siteId,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(reservationService.getPublicReservationDtos(user.getUsername(), siteId));
     }
 
     /** Rejoindre une réservation publique */

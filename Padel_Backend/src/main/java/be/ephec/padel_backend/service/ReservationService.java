@@ -111,6 +111,7 @@ public class ReservationService {
 
         validateReservationExistsAndNotStarted(reservation);
         validateReservationIsPublicAndJoinable(reservation);
+        validateSiteAccess(utilisateur, reservation.getTerrain());
 
         if (reservationUtilisateurRepository.existsByIdReservationIdAndIdUtilisateurMatricule(reservationId, userId)) {
             throw new RuntimeException("Utilisateur déjà inscrit à cette réservation");
@@ -166,6 +167,8 @@ public class ReservationService {
         if (!reservation.getCreateur().getMatricule().equals(organisateur.getMatricule())) {
             throw new RuntimeException("Seul l'organisateur peut ajouter un joueur à une réservation privée");
         }
+
+        validateSiteAccess(joueur, reservation.getTerrain());
 
         if (reservationUtilisateurRepository.existsByIdReservationIdAndIdUtilisateurMatricule(reservationId, joueurId)) {
             throw new RuntimeException("Ce joueur est déjà inscrit");
@@ -537,7 +540,22 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public List<PublicReservationDto> getPublicReservationDtos(Integer siteId) {
+    public List<PublicReservationDto> getPublicReservationDtos(String userId, Integer requestedSiteId) {
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        String matricule = utilisateur.getMatricule() == null ? "" : utilisateur.getMatricule().toUpperCase();
+        Integer siteId;
+
+        if (matricule.startsWith("S")) {
+            if (utilisateur.getSiteAssociated() == null) {
+                throw new RuntimeException("Membre site sans site associé");
+            }
+            siteId = utilisateur.getSiteAssociated().getSiteId();
+        } else {
+            siteId = requestedSiteId != null ? requestedSiteId : 1;
+        }
+
         return getPublicReservations(siteId).stream()
                 .map(this::toPublicReservationDto)
                 .collect(Collectors.toList());

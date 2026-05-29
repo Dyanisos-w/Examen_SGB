@@ -35,11 +35,11 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, String
            "ORDER BY u.nom, u.prenom")
     List<Utilisateur> findMembers();
 
-    @Query("SELECT u FROM Utilisateur u " +
-           "WHERE u.siteAssociated.siteId = :siteId " +
+    @Query("SELECT u FROM Utilisateur u LEFT JOIN u.siteAssociated s " +
+           "WHERE (s IS NULL OR s.siteId = :siteId) " +
            "AND UPPER(u.matricule) NOT LIKE 'GA%' " +
            "AND UPPER(u.matricule) NOT LIKE 'LA%' " +
-           "ORDER BY u.nom, u.prenom")
+           "ORDER BY CASE WHEN s IS NOT NULL THEN 0 ELSE 1 END, u.nom, u.prenom")
     List<Utilisateur> findMembersBySiteId(@Param("siteId") Integer siteId);
 
     @Query("SELECT u FROM Utilisateur u " +
