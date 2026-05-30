@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Optional;
+
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -39,7 +41,7 @@ class AuthServiceRegisterGlobalUserTest {
                 "Dupont", "Alice", "secret123", "GLOBAL", null
         );
 
-        when(utilisateurRepository.countByMatriculeStartingWith("G")).thenReturn(0L);
+        when(utilisateurRepository.findMaxNumeroByPrefix("G", 1)).thenReturn(Optional.empty());
         when(passwordEncoder.encode("secret123")).thenReturn("hashed-password");
 
         String matricule = authService.register(request);
@@ -56,7 +58,7 @@ class AuthServiceRegisterGlobalUserTest {
         assertEquals("hashed-password", saved.getPassword());
         assertNull(saved.getSiteAssociated());
 
-        verify(utilisateurRepository).countByMatriculeStartingWith("G");
+        verify(utilisateurRepository).findMaxNumeroByPrefix("G", 1);
         verify(siteRepository, never()).findFirstByNomIgnoreCase(org.mockito.ArgumentMatchers.anyString());
         verify(passwordEncoder).encode("secret123");
         verifyNoMoreInteractions(utilisateurRepository, siteRepository, passwordEncoder);

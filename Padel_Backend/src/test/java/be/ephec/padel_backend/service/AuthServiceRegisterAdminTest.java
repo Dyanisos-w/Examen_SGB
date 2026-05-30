@@ -42,7 +42,7 @@ class AuthServiceRegisterAdminTest {
         site.setSiteId(1);
         site.setNom("Bruxelles");
 
-        when(utilisateurRepository.countByMatriculeStartingWith("LA")).thenReturn(0L);
+        when(utilisateurRepository.findMaxNumeroByPrefix("LA", 2)).thenReturn(Optional.empty());
         when(siteRepository.findFirstByNomIgnoreCase("Bruxelles")).thenReturn(Optional.of(site));
         when(passwordEncoder.encode("secret123")).thenReturn("hashed");
 

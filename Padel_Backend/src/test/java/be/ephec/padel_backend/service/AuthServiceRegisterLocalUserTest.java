@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -44,7 +45,7 @@ class AuthServiceRegisterLocalUserTest {
         site.setSiteId(10);
         site.setNom("Bruxelles");
 
-        when(utilisateurRepository.countByMatriculeStartingWith("S")).thenReturn(0L);
+        when(utilisateurRepository.findMaxNumeroByPrefix("S", 1)).thenReturn(Optional.empty());
         when(siteRepository.findFirstByNomIgnoreCase("Bruxelles")).thenReturn(Optional.of(site));
         when(passwordEncoder.encode("secret123")).thenReturn("hashed-password");
 
@@ -62,7 +63,7 @@ class AuthServiceRegisterLocalUserTest {
         assertEquals("hashed-password", saved.getPassword());
         assertEquals(site, saved.getSiteAssociated());
 
-        verify(utilisateurRepository).countByMatriculeStartingWith("S");
+        verify(utilisateurRepository).findMaxNumeroByPrefix("S", 1);
         verify(siteRepository).findFirstByNomIgnoreCase("Bruxelles");
         verify(passwordEncoder).encode("secret123");
         verifyNoMoreInteractions(utilisateurRepository, siteRepository, passwordEncoder);
