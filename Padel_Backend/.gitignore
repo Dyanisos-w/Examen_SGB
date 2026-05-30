@@ -31,6 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-### Database backups (present in docker/ already) ###
-src/main/resources/sql/*.bak
