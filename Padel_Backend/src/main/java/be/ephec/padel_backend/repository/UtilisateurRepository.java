@@ -13,7 +13,12 @@ import java.util.Optional;
 
 @Repository
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, String> {
-    long countByMatriculeStartingWith(String prefix);
+    @Query(value = "SELECT MAX(CAST(SUBSTRING(matricule, :prefixLen + 1, 5) AS INT)) " +
+                   "FROM Utilisateur " +
+                   "WHERE matricule LIKE :prefix + '%' " +
+                   "AND LEN(matricule) = :prefixLen + 5",
+           nativeQuery = true)
+    Optional<Integer> findMaxNumeroByPrefix(@Param("prefix") String prefix, @Param("prefixLen") int prefixLen);
     Optional<Utilisateur> findByMatricule(String matricule);
 
     @Query("SELECT COUNT(u) FROM Utilisateur u " +

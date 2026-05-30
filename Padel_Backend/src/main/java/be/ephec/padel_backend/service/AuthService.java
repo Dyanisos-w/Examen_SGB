@@ -141,8 +141,9 @@ public class AuthService {
             case "GLOBALADMIN" -> "GA";
             default -> throw new IllegalArgumentException("Type de compte inconnu : " + role);
         };
-        long count = utilisateurRepository.countByMatriculeStartingWith(prefix) + 1;
-        return prefix + String.format("%05d", count);
+        int max = utilisateurRepository.findMaxNumeroByPrefix(prefix, prefix.length())
+                .orElse(0);
+        return prefix + String.format("%05d", max + 1);
     }
 
     private boolean isBlank(String v) {
