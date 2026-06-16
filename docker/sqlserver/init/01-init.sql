@@ -40,13 +40,23 @@ ELSE
     CREATE USER Admin_Padel FOR LOGIN Admin_Padel;
 GO
 
--- Donner les droits complets (contexte dev/démo)
-IF IS_ROLEMEMBER('db_owner', 'Utilisateur_Padel') = 0
-    EXEC sp_addrolemember 'db_owner', 'Utilisateur_Padel';
-GO
-
+-- ── Droits : MOINDRE PRIVILÈGE ───────────────────────────────────────────────
+-- Admin : compte privilégié (maintenance complète de la base)
 IF IS_ROLEMEMBER('db_owner', 'Admin_Padel') = 0
     EXEC sp_addrolemember 'db_owner', 'Admin_Padel';
+GO
+
+-- Utilisateur : lecture + écriture de DONNÉES uniquement (aucun DDL : pas de
+-- CREATE/ALTER/DROP, pas de gestion de la base). On retire d'abord db_owner au
+-- cas où il serait présent dans le backup, puis on n'accorde que datareader/writer.
+IF IS_ROLEMEMBER('db_owner', 'Utilisateur_Padel') = 1
+    EXEC sp_droprolemember 'db_owner', 'Utilisateur_Padel';
+GO
+IF IS_ROLEMEMBER('db_datareader', 'Utilisateur_Padel') = 0
+    EXEC sp_addrolemember 'db_datareader', 'Utilisateur_Padel';
+GO
+IF IS_ROLEMEMBER('db_datawriter', 'Utilisateur_Padel') = 0
+    EXEC sp_addrolemember 'db_datawriter', 'Utilisateur_Padel';
 GO
 
 PRINT 'Restauration PadelDB terminée avec succès.';
